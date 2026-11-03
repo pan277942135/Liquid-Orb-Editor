@@ -2,6 +2,7 @@ package com.example.aiorb.model
 
 import android.content.Context
 import android.graphics.Color
+import com.example.aiorb.util.AssetHelper
 import org.json.JSONObject
 import kotlin.math.PI
 import kotlin.math.cos
@@ -12,6 +13,26 @@ enum class FilamentDepth {
     BACK,
     FRONT
 }
+
+data class R06Layer(
+    val id: String,
+    val widthMultiplier: Float,
+    val alphaMax: Float,
+    val color: Int,
+    val travelsWithHead: Boolean = false,
+    val lengthFraction: Float = 0.12f,
+    val offsetNormalFraction: Float = 0f
+)
+
+data class R06MaterialConfig(
+    val materialId: String,
+    val baseColor: Int,
+    val highlightColor: Int,
+    val refractionColor: Int,
+    val widthMultiplier: Float,
+    val tailLengthRatio: Float,
+    val layers: List<R06Layer> = emptyList()
+)
 
 enum class FilamentMaterialType(
     val baseColor: Int,
@@ -57,8 +78,16 @@ data class BezierSegment(
     val end: Point2D
 )
 
+data class FilamentKinematics(
+    val headU: Float,
+    val tailU: Float,
+    val velocityU: Float,
+    val isReturn: Boolean
+)
+
 /**
  * Single R06 filament path backed by actual geometry from R06_orb_filament_path_geometry.json
+ * and runtime-driven material configuration from R06_orb_filament_profile.json
  */
 class FilamentPath(
     val id: String,
@@ -71,7 +100,15 @@ class FilamentPath(
     val widthMinDp: Float,
     val widthMaxDp: Float,
     val alphaMin: Float,
-    val alphaMax: Float
+    val alphaMax: Float,
+    val materialConfig: R06MaterialConfig = R06MaterialConfig(
+        materialId = materialType.name,
+        baseColor = materialType.baseColor,
+        highlightColor = materialType.highlightColor,
+        refractionColor = materialType.refractionColor,
+        widthMultiplier = materialType.widthMultiplier,
+        tailLengthRatio = materialType.tailLengthRatio
+    )
 ) {
     // 128-sample arc-length LUT computed once at load time
     val lutSamples = 128
@@ -103,7 +140,6 @@ class FilamentPath(
         if (numSegments == 1) {
             return evalBezier(start, segments[0].c1, segments[0].c2, segments[0].end, globalT)
         }
-        // Segment 1 or 2
         val segT = (globalT * numSegments).coerceIn(0f, numSegments.toFloat() - 0.0001f)
         val segIdx = segT.toInt()
         val localT = segT - segIdx
@@ -131,7 +167,6 @@ class FilamentPath(
         val clampedS = s.coerceIn(0f, 1f)
         val targetDist = clampedS * totalArcLength
 
-        // Binary search or linear search on the 128-sample LUT
         var idx = 0
         while (idx < lutSamples - 1 && lutCumulativeLengths[idx + 1] < targetDist) {
             idx++
@@ -150,31 +185,114 @@ class FilamentPath(
     }
 
     /**
-     * Compute current head and tail arc fractions according to frozen motion formula:
-     * p = fract(phase + elapsedMs / periodMs)
-     * headDistance = 0.5 - 0.5 * cos(2π * p)
+     * Compute continuous C1 arc-length kinematics without teleportation or direction flips.
+     * Guaranteed properties:
+     * 1. RELEASE (0–350ms): Smooth outward extension along Bezier arc-length
+     * 2. HOLD (350–690ms): Stable outer retention with zero velocity
+     * 3. RETURN (690–950ms): C1 continuous velocity reversal, smooth inward return over 260ms
+     * 4. Boundary (950ms -> 0ms): Matches start position, seamless next cycle transition
+     * 5. Tail continuity: tailU tracks headU with constant tailLengthRatio
+     */
+    fun computeKinematics(
+        elapsedMs: Long,
+        releaseCycleElapsedMs: Long,
+        phaseEvent: OrbPhaseEvent,
+        isHold: Boolean
+    ): FilamentKinematics {
+        val p = ((phase + elapsedMs.toDouble() / periodMs) % 1.0).toFloat()
+        val breathU = 0.5f - 0.5f * cos(2f * PI.toFloat() * p)
+
+        // Starting anchor position for the release cycle
+        val cycleStartMs = (elapsedMs - releaseCycleElapsedMs).coerceAtLeast(0L)
+        val pCycle = ((phase + cycleStartMs.toDouble() / periodMs) % 1.0).toFloat()
+        val breathCycleU = 0.5f - 0.5f * cos(2f * PI.toFloat() * pCycle)
+
+        val uStart = (0.22f + 0.32f * breathCycleU).coerceIn(0.18f, 0.65f)
+        val maxExt = (0.28f * materialConfig.widthMultiplier).coerceIn(0.20f, 0.36f)
+        val uTarget = (uStart + maxExt).coerceAtMost(0.96f)
+
+        val headU: Float
+        val velocityU: Float
+        val isReturn: Boolean
+
+        when (phaseEvent) {
+            OrbPhaseEvent.RELEASE -> {
+                if (isHold || releaseCycleElapsedMs >= 350L) {
+                    // HOLD (350–690ms)
+                    headU = uTarget
+                    velocityU = 0f
+                    isReturn = false
+                } else {
+                    // RELEASE outward extension (0–350ms)
+                    val progress = (releaseCycleElapsedMs / 350f).coerceIn(0f, 1f)
+                    val s = progress * progress * (3f - 2f * progress) // smoothstep
+                    headU = uStart + (uTarget - uStart) * s
+                    velocityU = (uTarget - uStart) * (6f * progress * (1f - progress)) / 350f
+                    isReturn = false
+                }
+            }
+            OrbPhaseEvent.RETURN -> {
+                // RETURN inward recovery (690–950ms, 260ms total)
+                val retProgress = ((releaseCycleElapsedMs - 690L) / 260f).coerceIn(0f, 1f)
+                val sRet = retProgress * retProgress * (3f - 2f * retProgress) // smoothstep C1
+                headU = uTarget + (uStart - uTarget) * sRet
+                // Inward velocity (negative sign)
+                velocityU = (uStart - uTarget) * (6f * retProgress * (1f - retProgress)) / 260f
+                isReturn = true
+            }
+            else -> {
+                // Normal S2 active breathing
+                headU = breathU
+                velocityU = (PI.toFloat() / periodMs) * sin(2f * PI.toFloat() * p)
+                isReturn = false
+            }
+        }
+
+        val tailU = (headU - materialConfig.tailLengthRatio).coerceAtLeast(0f)
+        return FilamentKinematics(
+            headU = headU.coerceIn(0f, 1f),
+            tailU = tailU.coerceIn(0f, 1f),
+            velocityU = velocityU,
+            isReturn = isReturn
+        )
+    }
+
+    /**
+     * Backward-compatible helper method.
      */
     fun computeHeadAndTail(elapsedMs: Long, releaseProgress: Float, isReturn: Boolean): Pair<Float, Float> {
         val p = ((phase + elapsedMs.toDouble() / periodMs) % 1.0).toFloat()
-        var headDistance = 0.5f - 0.5f * cos(2f * PI.toFloat() * p)
+        val breathU = 0.5f - 0.5f * cos(2f * PI.toFloat() * p)
 
-        if (releaseProgress > 0f) {
-            // Outward extension multiplier during RELEASE, returning during RETURN
-            val ext = if (!isReturn) releaseProgress * 0.25f else (1f - releaseProgress) * 0.25f
-            headDistance = (headDistance * (1f + ext)).coerceIn(0f, 1f)
+        val uStart = (0.22f + 0.32f * breathU).coerceIn(0.18f, 0.65f)
+        val maxExt = (0.28f * materialConfig.widthMultiplier).coerceIn(0.20f, 0.36f)
+        val uTarget = (uStart + maxExt).coerceAtMost(0.96f)
+
+        val headDistance = if (!isReturn) {
+            val s = releaseProgress * releaseProgress * (3f - 2f * releaseProgress)
+            uStart + (uTarget - uStart) * s
+        } else {
+            // In return, releaseProgress goes 1f -> 0f
+            val retProg = (1f - releaseProgress).coerceIn(0f, 1f)
+            val sRet = retProg * retProg * (3f - 2f * retProg)
+            uTarget + (uStart - uTarget) * sRet
         }
 
-        val tailDist = (headDistance - materialType.tailLengthRatio).coerceAtLeast(0f)
-        return Pair(headDistance, tailDist)
+        val tailDist = (headDistance - materialConfig.tailLengthRatio).coerceAtLeast(0f)
+        return Pair(headDistance.coerceIn(0f, 1f), tailDist.coerceIn(0f, 1f))
     }
 
     companion object {
         fun loadAllFromAssets(context: Context): List<FilamentPath> {
             val paths = mutableListOf<FilamentPath>()
             try {
-                // Try supplement path first, then fallback to packaged assets
-                val filename = "ai_orb/r06_v1/assets/paths/R06_orb_filament_path_geometry.json"
-                val jsonString = context.assets.open(filename).bufferedReader().use { it.readText() }
+                // 1. Load R06 frozen material profiles
+                val materialConfigs = loadMaterialProfiles(context)
+
+                // 2. Load R06 path geometry
+                val geomFilename = "ai_orb/r06_v1/assets/paths/R06_orb_filament_path_geometry.json"
+                val geomStream = AssetHelper.openAsset(context, geomFilename)
+                val jsonString = geomStream.bufferedReader().use { it.readText() }
                 val root = JSONObject(jsonString)
                 val jsonPaths = root.getJSONArray("paths")
 
@@ -184,7 +302,7 @@ class FilamentPath(
                     val typeStr = pObj.getString("type")
                     val depthStr = pObj.getString("depth")
 
-                    val mat = when (typeStr.lowercase()) {
+                    val matType = when (typeStr.lowercase()) {
                         "green" -> FilamentMaterialType.GREEN_RIBBON
                         "gold" -> FilamentMaterialType.WARM_GOLD_FILAMENT
                         else -> FilamentMaterialType.CYAN_WATER_RIBBON
@@ -221,10 +339,25 @@ class FilamentPath(
                     val aMin = aArr.getDouble(0).toFloat()
                     val aMax = aArr.getDouble(1).toFloat()
 
+                    // Match material config from loaded R06 profile
+                    val profileId = when (matType) {
+                        FilamentMaterialType.GREEN_RIBBON -> "green_water_ribbon"
+                        FilamentMaterialType.WARM_GOLD_FILAMENT -> "warm_gold_filament"
+                        FilamentMaterialType.CYAN_WATER_RIBBON -> "cyan_water_ribbon"
+                    }
+                    val matConfig = materialConfigs[profileId] ?: R06MaterialConfig(
+                        materialId = profileId,
+                        baseColor = matType.baseColor,
+                        highlightColor = matType.highlightColor,
+                        refractionColor = matType.refractionColor,
+                        widthMultiplier = matType.widthMultiplier,
+                        tailLengthRatio = matType.tailLengthRatio
+                    )
+
                     paths.add(
                         FilamentPath(
                             id = id,
-                            materialType = mat,
+                            materialType = matType,
                             depth = depth,
                             start = startPt,
                             segments = segmentsList,
@@ -233,7 +366,8 @@ class FilamentPath(
                             widthMinDp = wMin,
                             widthMaxDp = wMax,
                             alphaMin = aMin,
-                            alphaMax = aMax
+                            alphaMax = aMax,
+                            materialConfig = matConfig
                         )
                     )
                 }
@@ -241,6 +375,70 @@ class FilamentPath(
                 e.printStackTrace()
             }
             return paths
+        }
+
+        private fun loadMaterialProfiles(context: Context): Map<String, R06MaterialConfig> {
+            val map = mutableMapOf<String, R06MaterialConfig>()
+            try {
+                val profileFilename = "ai_orb/r06_v1/profiles/R06_orb_filament_profile.json"
+                val stream = AssetHelper.openAsset(context, profileFilename)
+                val jsonText = stream.bufferedReader().use { it.readText() }
+                val root = JSONObject(jsonText)
+                val matObj = root.optJSONObject("materials") ?: return map
+
+                val keys = matObj.keys()
+                while (keys.hasNext()) {
+                    val key = keys.next()
+                    val m = matObj.getJSONObject(key)
+                    val baseColStr = m.optString("base_color", "#5B8F78")
+                    val highColStr = m.optString("highlight_color", "#A9D9C5")
+                    val refrColStr = m.optString("refraction_color", "#326F67")
+                    val widthMult = m.optDouble("material_width_multiplier", 1.0).toFloat()
+
+                    val motionObj = m.optJSONObject("motion_binding")
+                    val tailRatio = motionObj?.optDouble("trail_length_fraction", 0.20)?.toFloat() ?: 0.20f
+
+                    val layersList = mutableListOf<R06Layer>()
+                    val layerArr = m.optJSONArray("layer_composition")
+                    if (layerArr != null) {
+                        for (idx in 0 until layerArr.length()) {
+                            val lObj = layerArr.getJSONObject(idx)
+                            val lId = lObj.getString("id")
+                            val lWidthMult = lObj.optDouble("width_multiplier", 1.0).toFloat()
+                            val lAlphaMax = lObj.optDouble("alpha_max", 0.5).toFloat()
+                            val lColStr = lObj.optString("color", baseColStr)
+                            val travelsWithHead = lObj.optBoolean("travels_with_head", false)
+                            val lenFraction = lObj.optDouble("length_fraction", 0.12).toFloat()
+                            val offsetNormal = lObj.optDouble("offset_normal_fraction", 0.0).toFloat()
+
+                            layersList.add(
+                                R06Layer(
+                                    id = lId,
+                                    widthMultiplier = lWidthMult,
+                                    alphaMax = lAlphaMax,
+                                    color = Color.parseColor(lColStr),
+                                    travelsWithHead = travelsWithHead,
+                                    lengthFraction = lenFraction,
+                                    offsetNormalFraction = offsetNormal
+                                )
+                            )
+                        }
+                    }
+
+                    map[key] = R06MaterialConfig(
+                        materialId = key,
+                        baseColor = Color.parseColor(baseColStr),
+                        highlightColor = Color.parseColor(highColStr),
+                        refractionColor = Color.parseColor(refrColStr),
+                        widthMultiplier = widthMult,
+                        tailLengthRatio = tailRatio,
+                        layers = layersList
+                    )
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+            return map
         }
     }
 }

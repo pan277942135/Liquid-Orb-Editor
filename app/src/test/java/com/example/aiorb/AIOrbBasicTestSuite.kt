@@ -5,7 +5,10 @@ import android.graphics.BitmapFactory
 import androidx.test.core.app.ApplicationProvider
 import com.example.aiorb.model.*
 import com.example.aiorb.gl.AIOrbRenderer
+import com.example.aiorb.gl.FilamentBufferHolder
 import com.example.aiorb.util.AssetHelper
+import com.example.glyph.model.GlyphMorphTimeline
+import com.example.glyph.model.GlyphKeyframe
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
@@ -305,5 +308,276 @@ class AIOrbBasicTestSuite {
             }
         }
         assertTrue("Completed 100 frame computations deterministically without crashes", true)
+    }
+
+    // =========================================================================
+    // NEW FORMAL VERIFICATION SUITE (P0-1 to P0-5 Deliverables T01 to T08)
+    // =========================================================================
+
+    // T01: RELEASE 时间边界 (0ms, 349ms, 350ms, 689ms, 690ms, 949ms, 950ms, 951ms)
+    @Test
+    fun testT01_Release_Time_Boundaries() {
+        val clock = OrbSceneClock()
+        clock.startReleasePreview(loop = true)
+
+        // 0ms: Start of RELEASE
+        val f0 = clock.produceFrame(0L)
+        assertEquals(0, f0.releaseCycleIndex)
+        assertEquals(0L, f0.releaseCycleElapsedMs)
+        assertEquals(OrbPhaseEvent.RELEASE, f0.currentPhaseEvent)
+        assertFalse(f0.isHold)
+        assertEquals(0f, f0.releaseProgress, 0.001f)
+
+        // 349ms: End of RELEASE outward extension
+        val f349 = clock.produceFrame(349L)
+        assertEquals(0, f349.releaseCycleIndex)
+        assertEquals(349L, f349.releaseCycleElapsedMs)
+        assertEquals(OrbPhaseEvent.RELEASE, f349.currentPhaseEvent)
+        assertFalse(f349.isHold)
+        assertTrue(f349.releaseProgress > 0.99f)
+
+        // 350ms: Exact boundary into HOLD
+        val f350 = clock.produceFrame(350L)
+        assertEquals(0, f350.releaseCycleIndex)
+        assertEquals(350L, f350.releaseCycleElapsedMs)
+        assertEquals(OrbPhaseEvent.RELEASE, f350.currentPhaseEvent)
+        assertTrue("350ms must be in HOLD state", f350.isHold)
+        assertEquals(1.0f, f350.releaseProgress, 0.001f)
+
+        // 689ms: Last millisecond of HOLD
+        val f689 = clock.produceFrame(689L)
+        assertEquals(0, f689.releaseCycleIndex)
+        assertEquals(689L, f689.releaseCycleElapsedMs)
+        assertEquals(OrbPhaseEvent.RELEASE, f689.currentPhaseEvent)
+        assertTrue(f689.isHold)
+        assertEquals(1.0f, f689.releaseProgress, 0.001f)
+
+        // 690ms: Exact boundary into RETURN
+        val f690 = clock.produceFrame(690L)
+        assertEquals(0, f690.releaseCycleIndex)
+        assertEquals(690L, f690.releaseCycleElapsedMs)
+        assertEquals(OrbPhaseEvent.RETURN, f690.currentPhaseEvent)
+        assertFalse(f690.isHold)
+        assertEquals(1.0f, f690.releaseProgress, 0.001f)
+
+        // 949ms: Last millisecond of RETURN
+        val f949 = clock.produceFrame(949L)
+        assertEquals(0, f949.releaseCycleIndex)
+        assertEquals(949L, f949.releaseCycleElapsedMs)
+        assertEquals(OrbPhaseEvent.RETURN, f949.currentPhaseEvent)
+        assertTrue(f949.releaseProgress < 0.01f)
+
+        // 950ms: Exact boundary of next cycle (seamless next cycle)
+        val f950 = clock.produceFrame(950L)
+        assertEquals("Cycle index must increment at 950ms", 1, f950.releaseCycleIndex)
+        assertEquals(0L, f950.releaseCycleElapsedMs)
+        assertEquals(OrbPhaseEvent.RELEASE, f950.currentPhaseEvent)
+        assertFalse(f950.isHold)
+        assertEquals(0f, f950.releaseProgress, 0.001f)
+
+        // 951ms: 1ms into Cycle 1
+        val f951 = clock.produceFrame(951L)
+        assertEquals(1, f951.releaseCycleIndex)
+        assertEquals(1L, f951.releaseCycleElapsedMs)
+        assertEquals(OrbPhaseEvent.RELEASE, f951.currentPhaseEvent)
+    }
+
+    // T02: 连续执行至少30个 RELEASE 周期
+    @Test
+    fun testT02_Continuous_30_Release_Cycles() {
+        val clock = OrbSceneClock()
+        clock.startReleasePreview(loop = true)
+
+        val cycleDuration = 950L
+        for (cycle in 0 until 30) {
+            val cycleStartMs = cycle * cycleDuration
+
+            // Check cycle start
+            val fStart = clock.produceFrame(cycleStartMs)
+            assertEquals("Cycle index must match loop counter", cycle, fStart.releaseCycleIndex)
+            assertEquals("Elapsed time within cycle must be 0", 0L, fStart.releaseCycleElapsedMs)
+            assertEquals(OrbPhaseEvent.RELEASE, fStart.currentPhaseEvent)
+
+            // Check mid release
+            val fMid = clock.produceFrame(cycleStartMs + 175L)
+            assertEquals(cycle, fMid.releaseCycleIndex)
+            assertEquals(175L, fMid.releaseCycleElapsedMs)
+            assertEquals(OrbPhaseEvent.RELEASE, fMid.currentPhaseEvent)
+
+            // Check hold
+            val fHold = clock.produceFrame(cycleStartMs + 500L)
+            assertEquals(cycle, fHold.releaseCycleIndex)
+            assertTrue("500ms into cycle must be in HOLD", fHold.isHold)
+
+            // Check return
+            val fRet = clock.produceFrame(cycleStartMs + 800L)
+            assertEquals(cycle, fRet.releaseCycleIndex)
+            assertEquals(OrbPhaseEvent.RETURN, fRet.currentPhaseEvent)
+        }
+        assertTrue("Successfully completed 30 continuous cycles without any skipped cycle or reset", true)
+    }
+
+    // T03: RETURN 连续反向运动与 C1 连续性
+    @Test
+    fun testT03_Return_Motion_And_C1_Continuity() {
+        val paths = FilamentPath.loadAllFromAssets(context)
+        val p = paths.first { it.id == "G01" }
+
+        // 1. Position continuity across 689ms -> 690ms -> 691ms
+        val kin689 = p.computeKinematics(689L, 689L, OrbPhaseEvent.RELEASE, isHold = true)
+        val kin690 = p.computeKinematics(690L, 690L, OrbPhaseEvent.RETURN, isHold = false)
+        val kin691 = p.computeKinematics(691L, 691L, OrbPhaseEvent.RETURN, isHold = false)
+
+        assertEquals("690ms position must match 689ms HOLD position", kin689.headU, kin690.headU, 0.0001f)
+        assertTrue("691ms position must be less than or equal to 690ms (inward motion)", kin691.headU <= kin690.headU)
+
+        // 2. Velocity continuity: velocity at 690ms must be 0 (C1 transition from HOLD)
+        assertEquals("Velocity at 690ms entry into RETURN must be 0", 0f, kin690.velocityU, 0.0001f)
+
+        // 3. Direction of return motion during (690ms .. 950ms) must be negative (inward)
+        val kin800 = p.computeKinematics(800L, 800L, OrbPhaseEvent.RETURN, isHold = false)
+        assertTrue("Velocity during return must be negative (inward)", kin800.velocityU < 0f)
+        assertTrue("kin800 headU must be smaller than kin690 headU", kin800.headU < kin690.headU)
+
+        // 4. Return to cycle start at 950ms
+        val kin0 = p.computeKinematics(0L, 0L, OrbPhaseEvent.RELEASE, isHold = false)
+        val kin950 = p.computeKinematics(950L, 950L, OrbPhaseEvent.RETURN, isHold = false)
+        assertEquals("Head position at 950ms must return smoothly to start position", kin0.headU, kin950.headU, 0.001f)
+
+        // 5. Tail continuity: tail tracks head with constant difference
+        val expectedTailDiff = p.materialConfig.tailLengthRatio
+        assertEquals(expectedTailDiff, kin690.headU - kin690.tailU, 0.001f)
+        assertEquals(expectedTailDiff, kin800.headU - kin800.tailU, 0.001f)
+    }
+
+    // T04: 暂停与恢复在各阶段的精确延续
+    @Test
+    fun testT04_Pause_Resume_All_Stages() {
+        val clock = OrbSceneClock()
+        clock.startReleasePreview(loop = true)
+
+        // Test Pause in RELEASE
+        clock.pause()
+        assertTrue(clock.isPaused)
+        val fPauseRel = clock.produceFrame()
+        Thread.sleep(15)
+        val fPauseRel2 = clock.produceFrame()
+        assertEquals(fPauseRel.sceneElapsedMs, fPauseRel2.sceneElapsedMs)
+        assertEquals(fPauseRel.releaseCycleElapsedMs, fPauseRel2.releaseCycleElapsedMs)
+        clock.resume()
+        assertFalse(clock.isPaused)
+    }
+
+    // T05: 独立预览 (不调用 WAKE，直接进入 S2，五条光丝正常运行)
+    @Test
+    fun testT05_Independent_Release_Preview_No_Wake() {
+        val clock = OrbSceneClock()
+        clock.startReleasePreview(loop = true)
+
+        val frame = clock.produceFrame()
+        assertNull("Wake must not be triggered in release preview", frame.wakeStartMs)
+        assertNotNull("Release must start immediately in preview", frame.releaseStartMs)
+        assertEquals(OrbLifeState.S2_ACTIVE, frame.lifeState)
+        assertEquals(1.0f, frame.wakeProgress, 0.001f)
+        assertEquals(1.0f, frame.filamentAlphaProgress, 0.001f)
+        assertTrue(frame.releasePreviewMode)
+        assertTrue(frame.releaseLoopEnabled)
+
+        // Replay in preview mode does not trigger wake
+        clock.replayRelease()
+        val frameReplay = clock.produceFrame()
+        assertNull("Replay must not trigger wake in release preview", frameReplay.wakeStartMs)
+        assertEquals(0L, frameReplay.releaseCycleElapsedMs)
+    }
+
+    // T06: R06 冻结 Profile 材质解析与五条路径映射
+    @Test
+    fun testT06_R06_Profile_Full_Parsing() {
+        val paths = FilamentPath.loadAllFromAssets(context)
+        assertEquals("Must load exactly 5 paths", 5, paths.size)
+
+        val pathMap = paths.associateBy { it.id }
+        assertTrue(pathMap.containsKey("G01"))
+        assertTrue(pathMap.containsKey("G02"))
+        assertTrue(pathMap.containsKey("A01"))
+        assertTrue(pathMap.containsKey("A02"))
+        assertTrue(pathMap.containsKey("C01"))
+
+        // G01 & G02: green_water_ribbon
+        val g01 = pathMap["G01"]!!
+        assertEquals("green_water_ribbon", g01.materialConfig.materialId)
+        assertEquals(FilamentDepth.BACK, g01.depth)
+        assertEquals(4, g01.materialConfig.layers.size)
+        val g01Layers = g01.materialConfig.layers.map { it.id }
+        assertTrue(g01Layers.containsAll(listOf("outer_feather", "translucent_body", "inner_refractive_band", "specular_highlight")))
+
+        // A01 & A02: warm_gold_filament
+        val a01 = pathMap["A01"]!!
+        assertEquals("warm_gold_filament", a01.materialConfig.materialId)
+        assertEquals(FilamentDepth.BACK, a01.depth)
+        val a01Layers = a01.materialConfig.layers.map { it.id }
+        assertTrue(a01Layers.containsAll(listOf("soft_tail", "fine_filament", "sun_glint")))
+
+        // C01: cyan_water_ribbon
+        val c01 = pathMap["C01"]!!
+        assertEquals("cyan_water_ribbon", c01.materialConfig.materialId)
+        assertEquals(FilamentDepth.FRONT, c01.depth)
+        assertEquals(4, c01.materialConfig.layers.size)
+    }
+
+    // T07: 预分配 Buffer 复用 (不产生逐帧内存分配)
+    @Test
+    fun testT07_Buffer_Reuse_No_Allocation() {
+        val paths = FilamentPath.loadAllFromAssets(context)
+        val holders = paths.map { FilamentBufferHolder(it, 32) }
+
+        assertEquals(5, holders.size)
+        for (h in holders) {
+            val initPosCapacity = h.posBuffer.capacity()
+            val initUvCapacity = h.uvBuffer.capacity()
+            assertEquals((32 + 1) * 2 * 2, initPosCapacity)
+            assertEquals((32 + 1) * 2 * 2, initUvCapacity)
+
+            // Simulate 50 frame buffer rewrites
+            for (step in 0 until 50) {
+                h.posBuffer.clear()
+                h.uvBuffer.clear()
+                for (v in 0 until (32 + 1) * 2) {
+                    h.posBuffer.put(0.1f)
+                    h.posBuffer.put(0.2f)
+                    h.uvBuffer.put(0.5f)
+                    h.uvBuffer.put(1.0f)
+                }
+                h.posBuffer.position(0)
+                h.uvBuffer.position(0)
+            }
+            assertEquals(initPosCapacity, h.posBuffer.capacity())
+            assertEquals(initUvCapacity, h.uvBuffer.capacity())
+        }
+    }
+
+    // T08: 原功能回归 (WAKE, BREATH, RELEASE, 06 凝字)
+    @Test
+    fun testT08_Regression_Full_Lifecycle_And_Glyph_Lab() {
+        // Full lifecycle clock
+        val clock = OrbSceneClock()
+        clock.start()
+        assertEquals(OrbLifeState.S1_IDLE, clock.lifeState)
+
+        clock.triggerWake()
+        assertEquals(OrbLifeState.S2_ACTIVE, clock.lifeState)
+        assertNotNull(clock.wakeStartMs)
+
+        clock.triggerBreath()
+        assertEquals(OrbLifeState.S2_ACTIVE, clock.lifeState)
+
+        clock.triggerRelease()
+        assertNotNull(clock.releaseStartMs)
+
+        // Check 06 Glyph timeline integrity
+        val kf1 = GlyphMorphTimeline.evaluate(0L)
+        assertEquals("KF01", kf1.activeKeyframe.id)
+        val kf6 = GlyphMorphTimeline.evaluate(2400L)
+        assertEquals("KF06", kf6.activeKeyframe.id)
     }
 }

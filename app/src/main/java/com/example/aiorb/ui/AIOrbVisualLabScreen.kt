@@ -128,7 +128,9 @@ fun AIOrbVisualLabScreen(
                 onToggleSize = { viewModel.toggleSize() },
                 onTogglePanel = { viewModel.toggleBottomPanel() },
                 onExport = { viewModel.exportCalibrationJson() },
-                onSwitchMode = onSwitchMode
+                onSwitchMode = onSwitchMode,
+                onSetLabMode = { viewModel.setLabMode(it) },
+                onToggleLoop = { viewModel.toggleReleaseLoop() }
             )
 
             // Real-time HUD info
@@ -162,7 +164,9 @@ private fun TopLabHeader(
     onToggleSize: () -> Unit,
     onTogglePanel: () -> Unit,
     onExport: () -> Unit,
-    onSwitchMode: (String) -> Unit
+    onSwitchMode: (String) -> Unit,
+    onSetLabMode: (AIOrbLabMode) -> Unit,
+    onToggleLoop: () -> Unit
 ) {
     Surface(
         modifier = Modifier
@@ -172,118 +176,186 @@ private fun TopLabHeader(
         color = Color(0xD90D111E),
         border = androidx.compose.foundation.BorderStroke(1.dp, Color(0x3338BDF8))
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 6.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+                .padding(horizontal = 12.dp, vertical = 8.dp)
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(10.dp)
-                        .clip(CircleShape)
-                        .background(if (uiState.lifeState == OrbLifeState.S2_ACTIVE) Color(0xFF10B981) else Color(0xFF38BDF8))
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Column {
-                    Text(
-                        text = "AI ORB VISUAL LAB",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
+            // Row 1: Title, Mode Tabs, and Navigation
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(10.dp)
+                            .clip(CircleShape)
+                            .background(if (uiState.lifeState == OrbLifeState.S2_ACTIVE) Color(0xFF10B981) else Color(0xFF38BDF8))
                     )
-                    Text(
-                        text = "V1.1 Frozen Visual Profile",
-                        fontSize = 10.sp,
-                        color = Color(0xFF94A3B8)
-                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Column {
+                        Text(
+                            text = "AI ORB VISUAL LAB",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                        Text(
+                            text = "R06 Frozen Profile + Kinematics",
+                            fontSize = 9.sp,
+                            color = Color(0xFF94A3B8)
+                        )
+                    }
+                }
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    // Switch to 06 凝字实验室
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = Color(0xFF1E293B),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0x4467C8D2)),
+                        modifier = Modifier
+                            .clickable { onSwitchMode("glyph_lab") }
+                            .testTag("switch_to_glyph_lab_button")
+                    ) {
+                        Text(
+                            text = "06凝字",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF67C8D2),
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 4.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(4.dp))
+
+                    // Size toggle badge
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = Color(0xFF1E2338),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0x4438BDF8)),
+                        modifier = Modifier
+                            .clickable { onToggleSize() }
+                            .testTag("size_toggle_button")
+                    ) {
+                        Text(
+                            text = "${(uiState.orbSizeScale * 80).toInt()}dp",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF67E8F9),
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 4.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(4.dp))
+
+                    IconButton(onClick = onTogglePanel, modifier = Modifier.size(32.dp).testTag("tuning_toggle_button")) {
+                        Icon(
+                            imageVector = Icons.Default.Tune,
+                            contentDescription = "Toggle Control Panel",
+                            tint = if (uiState.isBottomPanelExpanded) Color(0xFF38BDF8) else Color(0xFF94A3B8),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+
+                    IconButton(onClick = onExport, modifier = Modifier.size(32.dp).testTag("export_calibration_button")) {
+                        Icon(
+                            imageVector = Icons.Default.FileDownload,
+                            contentDescription = "Export JSON",
+                            tint = Color(0xFF34D399),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
                 }
             }
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                // Switch to 06 凝字实验室
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = Color(0xFF1E293B),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0x4467C8D2)),
+            Spacer(modifier = Modifier.height(6.dp))
+
+            // Row 2: Mode Selector Segmented Tabs & Playback Quick Actions
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                // Segmented Mode Tabs: [RELEASE 专项 | 完整生命流程]
+                Row(
                     modifier = Modifier
-                        .clickable { onSwitchMode("glyph_lab") }
-                        .testTag("switch_to_glyph_lab_button")
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color(0xFF121828))
+                        .padding(2.dp),
+                    horizontalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
-                    Text(
-                        text = "06凝字",
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF67C8D2),
-                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 4.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.width(4.dp))
+                    val isReleaseMode = uiState.labMode == AIOrbLabMode.RELEASE_PREVIEW
+                    Surface(
+                        shape = RoundedCornerShape(6.dp),
+                        color = if (isReleaseMode) Color(0xFFEC4899) else Color.Transparent,
+                        modifier = Modifier
+                            .clickable { onSetLabMode(AIOrbLabMode.RELEASE_PREVIEW) }
+                            .testTag("mode_release_preview_tab")
+                    ) {
+                        Text(
+                            text = "RELEASE 专项 (循环)",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (isReleaseMode) Color.White else Color(0xFF94A3B8),
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        )
+                    }
 
-                // Size toggle badge
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = Color(0xFF1E2338),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0x4438BDF8)),
-                    modifier = Modifier
-                        .clickable { onToggleSize() }
-                        .testTag("size_toggle_button")
-                ) {
-                    Text(
-                        text = "${(uiState.orbSizeScale * 80).toInt()}dp",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF67E8F9),
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.width(4.dp))
-
-                IconButton(onClick = onPlayPause, modifier = Modifier.size(36.dp).testTag("play_pause_button")) {
-                    Icon(
-                        imageVector = if (!uiState.isPaused) Icons.Default.Pause else Icons.Default.PlayArrow,
-                        contentDescription = "Play/Pause",
-                        tint = if (!uiState.isPaused) Color(0xFF38BDF8) else Color(0xFFFBBF24),
-                        modifier = Modifier.size(20.dp)
-                    )
+                    Surface(
+                        shape = RoundedCornerShape(6.dp),
+                        color = if (!isReleaseMode) Color(0xFF38BDF8) else Color.Transparent,
+                        modifier = Modifier
+                            .clickable { onSetLabMode(AIOrbLabMode.FULL_LIFECYCLE) }
+                            .testTag("mode_full_lifecycle_tab")
+                    ) {
+                        Text(
+                            text = "完整生命流程",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (!isReleaseMode) Color(0xFF0F172A) else Color(0xFF94A3B8),
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        )
+                    }
                 }
 
-                IconButton(onClick = onReplay, modifier = Modifier.size(36.dp).testTag("replay_button")) {
-                    Icon(
-                        imageVector = Icons.Default.Replay,
-                        contentDescription = "Replay Wake",
-                        tint = Color(0xFFC084FC),
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
+                // Quick Play/Pause, Replay, and Loop Toggle
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    // Loop Toggle (active in RELEASE mode)
+                    Surface(
+                        shape = RoundedCornerShape(6.dp),
+                        color = if (uiState.releaseLoopEnabled) Color(0xFF065F46) else Color(0xFF334155),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, if (uiState.releaseLoopEnabled) Color(0xFF10B981) else Color(0xFF64748B)),
+                        modifier = Modifier
+                            .clickable { onToggleLoop() }
+                            .testTag("loop_toggle_button")
+                    ) {
+                        Text(
+                            text = if (uiState.releaseLoopEnabled) "LOOP: ON" else "LOOP: OFF",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (uiState.releaseLoopEnabled) Color(0xFFA7F3D0) else Color(0xFFCBD5E1),
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
+                        )
+                    }
 
-                IconButton(onClick = onReset, modifier = Modifier.size(36.dp).testTag("reset_button")) {
-                    Icon(
-                        imageVector = Icons.Default.RestartAlt,
-                        contentDescription = "Reset",
-                        tint = Color(0xFF94A3B8),
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
+                    IconButton(onClick = onPlayPause, modifier = Modifier.size(32.dp).testTag("play_pause_button")) {
+                        Icon(
+                            imageVector = if (!uiState.isPaused) Icons.Default.Pause else Icons.Default.PlayArrow,
+                            contentDescription = "Play/Pause",
+                            tint = if (!uiState.isPaused) Color(0xFF38BDF8) else Color(0xFFFBBF24),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
 
-                IconButton(onClick = onTogglePanel, modifier = Modifier.size(36.dp).testTag("tuning_toggle_button")) {
-                    Icon(
-                        imageVector = Icons.Default.Tune,
-                        contentDescription = "Toggle Control Panel",
-                        tint = if (uiState.isBottomPanelExpanded) Color(0xFF38BDF8) else Color(0xFF94A3B8),
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-
-                IconButton(onClick = onExport, modifier = Modifier.size(36.dp).testTag("export_calibration_button")) {
-                    Icon(
-                        imageVector = Icons.Default.FileDownload,
-                        contentDescription = "Export JSON",
-                        tint = Color(0xFF34D399),
-                        modifier = Modifier.size(20.dp)
-                    )
+                    IconButton(onClick = onReplay, modifier = Modifier.size(32.dp).testTag("replay_button")) {
+                        Icon(
+                            imageVector = Icons.Default.Replay,
+                            contentDescription = "Replay",
+                            tint = Color(0xFFC084FC),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
                 }
             }
         }
@@ -306,63 +378,117 @@ private fun MetricsHudBar(uiState: AIOrbUiState) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Life state chip
-            val stateColor = when {
-                uiState.isPaused -> Color(0xFFEAB308)
-                uiState.currentPhaseEvent == OrbPhaseEvent.RELEASE -> Color(0xFFEC4899)
-                uiState.currentPhaseEvent == OrbPhaseEvent.RETURN -> Color(0xFFA855F7)
-                uiState.currentPhaseEvent == OrbPhaseEvent.WAKE -> Color(0xFF06B6D4)
-                uiState.lifeState == OrbLifeState.S2_ACTIVE -> Color(0xFF10B981)
-                else -> Color(0xFF64748B)
-            }
-            val stateText = when {
-                uiState.isPaused -> "PAUSED"
-                uiState.currentPhaseEvent == OrbPhaseEvent.RELEASE -> "S2 RELEASE (350-690ms)"
-                uiState.currentPhaseEvent == OrbPhaseEvent.RETURN -> "S2 RETURN (690-950ms)"
-                uiState.currentPhaseEvent == OrbPhaseEvent.WAKE -> "S1→S2 WAKE (350ms)"
-                uiState.lifeState == OrbLifeState.S2_ACTIVE -> "S2 ACTIVE BREATH (4.8s)"
-                else -> "S1 IDLE (6.0s)"
-            }
+            if (uiState.labMode == AIOrbLabMode.RELEASE_PREVIEW) {
+                // RELEASE Special Phase chip
+                val stateColor = when {
+                    uiState.isPaused -> Color(0xFFEAB308)
+                    uiState.isHold -> Color(0xFFF59E0B)
+                    uiState.currentPhaseEvent == OrbPhaseEvent.RELEASE -> Color(0xFFEC4899)
+                    uiState.currentPhaseEvent == OrbPhaseEvent.RETURN -> Color(0xFFA855F7)
+                    else -> Color(0xFF10B981)
+                }
+                val stateText = when {
+                    uiState.isPaused -> "PAUSED"
+                    uiState.isHold -> "HOLD (350–690ms)"
+                    uiState.currentPhaseEvent == OrbPhaseEvent.RELEASE -> "RELEASE (0–350ms)"
+                    uiState.currentPhaseEvent == OrbPhaseEvent.RETURN -> "RETURN (690–950ms)"
+                    else -> "S2 BREATH"
+                }
 
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(6.dp))
-                    .background(stateColor.copy(alpha = 0.2f))
-                    .border(1.dp, stateColor.copy(alpha = 0.6f), RoundedCornerShape(6.dp))
-                    .padding(horizontal = 8.dp, vertical = 2.dp)
-            ) {
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(stateColor.copy(alpha = 0.2f))
+                        .border(1.dp, stateColor.copy(alpha = 0.6f), RoundedCornerShape(6.dp))
+                        .padding(horizontal = 8.dp, vertical = 2.dp)
+                ) {
+                    Text(
+                        text = stateText,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = stateColor
+                    )
+                }
+
+                // Cycle info: Cycle #N (time/950ms)
                 Text(
-                    text = stateText,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = stateColor
+                    text = "Cycle #${uiState.releaseCycleIndex} (${uiState.releaseCycleElapsedMs}ms/950ms)",
+                    fontSize = 11.sp,
+                    fontFamily = FontFamily.Monospace,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color(0xFF67E8F9)
+                )
+
+                // R06 5 Paths status
+                Text(
+                    text = "5/5 R06 Paths",
+                    fontSize = 11.sp,
+                    fontFamily = FontFamily.Monospace,
+                    color = Color(0xFF86EFAC)
+                )
+
+                // Size
+                Text(
+                    text = "${(uiState.orbSizeScale * 80).toInt()}dp",
+                    fontSize = 11.sp,
+                    fontFamily = FontFamily.Monospace,
+                    color = Color(0xFF38BDF8)
+                )
+            } else {
+                // Full lifecycle HUD
+                val stateColor = when {
+                    uiState.isPaused -> Color(0xFFEAB308)
+                    uiState.currentPhaseEvent == OrbPhaseEvent.RELEASE -> Color(0xFFEC4899)
+                    uiState.currentPhaseEvent == OrbPhaseEvent.RETURN -> Color(0xFFA855F7)
+                    uiState.currentPhaseEvent == OrbPhaseEvent.WAKE -> Color(0xFF06B6D4)
+                    uiState.lifeState == OrbLifeState.S2_ACTIVE -> Color(0xFF10B981)
+                    else -> Color(0xFF64748B)
+                }
+                val stateText = when {
+                    uiState.isPaused -> "PAUSED"
+                    uiState.currentPhaseEvent == OrbPhaseEvent.RELEASE -> "S2 RELEASE (0–690ms)"
+                    uiState.currentPhaseEvent == OrbPhaseEvent.RETURN -> "S2 RETURN (690–950ms)"
+                    uiState.currentPhaseEvent == OrbPhaseEvent.WAKE -> "S1→S2 WAKE (350ms)"
+                    uiState.lifeState == OrbLifeState.S2_ACTIVE -> "S2 ACTIVE BREATH"
+                    else -> "S1 IDLE (6.0s)"
+                }
+
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(stateColor.copy(alpha = 0.2f))
+                        .border(1.dp, stateColor.copy(alpha = 0.6f), RoundedCornerShape(6.dp))
+                        .padding(horizontal = 8.dp, vertical = 2.dp)
+                ) {
+                    Text(
+                        text = stateText,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = stateColor
+                    )
+                }
+
+                Text(
+                    text = "t:${uiState.sceneElapsedMs}ms",
+                    fontSize = 11.sp,
+                    fontFamily = FontFamily.Monospace,
+                    color = Color(0xFF94A3B8)
+                )
+
+                Text(
+                    text = "W:${(uiState.wakeProgress * 100).toInt()}% R:${(uiState.releaseProgress * 100).toInt()}%",
+                    fontSize = 11.sp,
+                    fontFamily = FontFamily.Monospace,
+                    color = Color(0xFF67E8F9)
+                )
+
+                Text(
+                    text = "${(uiState.orbSizeScale * 80).toInt()}dp",
+                    fontSize = 11.sp,
+                    fontFamily = FontFamily.Monospace,
+                    color = Color(0xFF38BDF8)
                 )
             }
-
-            // Size & Scene metrics
-            Text(
-                text = "Size:${(uiState.orbSizeScale * 80).toInt()}dp",
-                fontSize = 11.sp,
-                fontFamily = FontFamily.Monospace,
-                fontWeight = FontWeight.SemiBold,
-                color = Color(0xFF38BDF8)
-            )
-
-            // Monotonic Clock metrics
-            Text(
-                text = "t:${uiState.sceneElapsedMs}ms",
-                fontSize = 11.sp,
-                fontFamily = FontFamily.Monospace,
-                color = Color(0xFF94A3B8)
-            )
-
-            // Progress percentages
-            Text(
-                text = "W:${(uiState.wakeProgress * 100).toInt()}% R:${(uiState.releaseProgress * 100).toInt()}%",
-                fontSize = 11.sp,
-                fontFamily = FontFamily.Monospace,
-                color = Color(0xFF67E8F9)
-            )
         }
     }
 }
@@ -431,26 +557,50 @@ private fun BottomControlPanel(
                     if (!uiState.isBottomPanelExpanded) {
                         Spacer(modifier = Modifier.width(8.dp))
                         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Surface(
-                                shape = RoundedCornerShape(6.dp),
-                                color = if (uiState.currentPhaseEvent == OrbPhaseEvent.WAKE) Color(0xFF06B6D4) else Color(0xFF1E293B),
-                                modifier = Modifier.clickable { viewModel.triggerWake() }
-                            ) {
-                                Text("WAKE", fontSize = 10.sp, color = Color.White, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp))
-                            }
-                            Surface(
-                                shape = RoundedCornerShape(6.dp),
-                                color = if (uiState.lifeState == OrbLifeState.S2_ACTIVE && uiState.currentPhaseEvent == OrbPhaseEvent.NONE) Color(0xFF10B981) else Color(0xFF1E293B),
-                                modifier = Modifier.clickable { viewModel.triggerBreath() }
-                            ) {
-                                Text("BREATH", fontSize = 10.sp, color = Color.White, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp))
-                            }
-                            Surface(
-                                shape = RoundedCornerShape(6.dp),
-                                color = if (uiState.currentPhaseEvent == OrbPhaseEvent.RELEASE || uiState.currentPhaseEvent == OrbPhaseEvent.RETURN) Color(0xFFEC4899) else Color(0xFF1E293B),
-                                modifier = Modifier.clickable { viewModel.triggerRelease() }
-                            ) {
-                                Text("REL", fontSize = 10.sp, color = Color.White, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp))
+                            if (uiState.labMode == AIOrbLabMode.RELEASE_PREVIEW) {
+                                Surface(
+                                    shape = RoundedCornerShape(6.dp),
+                                    color = if (!uiState.isPaused) Color(0xFF0284C7) else Color(0xFFEAB308),
+                                    modifier = Modifier.clickable { viewModel.togglePlayPause() }
+                                ) {
+                                    Text(if (!uiState.isPaused) "PAUSE" else "PLAY", fontSize = 10.sp, color = Color.White, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp))
+                                }
+                                Surface(
+                                    shape = RoundedCornerShape(6.dp),
+                                    color = Color(0xFF7C3AED),
+                                    modifier = Modifier.clickable { viewModel.replay() }
+                                ) {
+                                    Text("REPLAY", fontSize = 10.sp, color = Color.White, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp))
+                                }
+                                Surface(
+                                    shape = RoundedCornerShape(6.dp),
+                                    color = if (uiState.releaseLoopEnabled) Color(0xFF059669) else Color(0xFF475569),
+                                    modifier = Modifier.clickable { viewModel.toggleReleaseLoop() }
+                                ) {
+                                    Text(if (uiState.releaseLoopEnabled) "LOOP:ON" else "LOOP:OFF", fontSize = 10.sp, color = Color.White, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp))
+                                }
+                            } else {
+                                Surface(
+                                    shape = RoundedCornerShape(6.dp),
+                                    color = if (uiState.currentPhaseEvent == OrbPhaseEvent.WAKE) Color(0xFF06B6D4) else Color(0xFF1E293B),
+                                    modifier = Modifier.clickable { viewModel.triggerWake() }
+                                ) {
+                                    Text("WAKE", fontSize = 10.sp, color = Color.White, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp))
+                                }
+                                Surface(
+                                    shape = RoundedCornerShape(6.dp),
+                                    color = if (uiState.lifeState == OrbLifeState.S2_ACTIVE && uiState.currentPhaseEvent == OrbPhaseEvent.NONE) Color(0xFF10B981) else Color(0xFF1E293B),
+                                    modifier = Modifier.clickable { viewModel.triggerBreath() }
+                                ) {
+                                    Text("BREATH", fontSize = 10.sp, color = Color.White, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp))
+                                }
+                                Surface(
+                                    shape = RoundedCornerShape(6.dp),
+                                    color = if (uiState.currentPhaseEvent == OrbPhaseEvent.RELEASE || uiState.currentPhaseEvent == OrbPhaseEvent.RETURN) Color(0xFFEC4899) else Color(0xFF1E293B),
+                                    modifier = Modifier.clickable { viewModel.triggerRelease() }
+                                ) {
+                                    Text("REL", fontSize = 10.sp, color = Color.White, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp))
+                                }
                             }
                         }
                     }
@@ -470,13 +620,23 @@ private fun BottomControlPanel(
                         .padding(horizontal = 12.dp)
                         .verticalScroll(rememberScrollState())
                 ) {
-                    // 1. Three Core Visual Actions
-                    PrimaryThreeStateBar(
-                        uiState = uiState,
-                        onWake = { viewModel.triggerWake() },
-                        onBreath = { viewModel.triggerBreath() },
-                        onRelease = { viewModel.triggerRelease() }
-                    )
+                    // 1. Actions Bar (RELEASE Special or Full Lifecycle)
+                    if (uiState.labMode == AIOrbLabMode.RELEASE_PREVIEW) {
+                        ReleaseDedicatedActionsBar(
+                            uiState = uiState,
+                            onPlayPause = { viewModel.togglePlayPause() },
+                            onReplay = { viewModel.replay() },
+                            onToggleLoop = { viewModel.toggleReleaseLoop() },
+                            onCollapse = { viewModel.setBottomPanelExpanded(false) }
+                        )
+                    } else {
+                        PrimaryThreeStateBar(
+                            uiState = uiState,
+                            onWake = { viewModel.triggerWake() },
+                            onBreath = { viewModel.triggerBreath() },
+                            onRelease = { viewModel.triggerRelease() }
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(8.dp))
 
@@ -583,6 +743,103 @@ private fun OrbSizeControlSection(
                 displayFormat = "%.2fx",
                 unit = " (${(currentScale * 80).toInt()}dp)"
             )
+        }
+    }
+}
+
+@Composable
+private fun ReleaseDedicatedActionsBar(
+    uiState: AIOrbUiState,
+    onPlayPause: () -> Unit,
+    onReplay: () -> Unit,
+    onToggleLoop: () -> Unit,
+    onCollapse: () -> Unit
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 2.dp),
+        shape = RoundedCornerShape(16.dp),
+        color = Color(0xCC0D111E),
+        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0x44EC4899))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            // Play/Pause
+            Button(
+                onClick = onPlayPause,
+                modifier = Modifier
+                    .weight(1f)
+                    .height(44.dp)
+                    .testTag("release_play_pause_button"),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (!uiState.isPaused) Color(0xFF0284C7) else Color(0xFFEAB308)
+                ),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(if (!uiState.isPaused) "PAUSE" else "PLAY", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Text(if (!uiState.isPaused) "暂停播放" else "继续播放", fontSize = 8.sp, color = Color.White.copy(alpha = 0.8f))
+                }
+            }
+
+            // Replay
+            Button(
+                onClick = onReplay,
+                modifier = Modifier
+                    .weight(1f)
+                    .height(44.dp)
+                    .testTag("release_replay_button"),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF7C3AED)
+                ),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("REPLAY", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Text("重播RELEASE", fontSize = 8.sp, color = Color.White.copy(alpha = 0.8f))
+                }
+            }
+
+            // Loop Toggle
+            Button(
+                onClick = onToggleLoop,
+                modifier = Modifier
+                    .weight(1.1f)
+                    .height(44.dp)
+                    .testTag("release_loop_toggle_button"),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (uiState.releaseLoopEnabled) Color(0xFF059669) else Color(0xFF334155)
+                ),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(if (uiState.releaseLoopEnabled) "LOOP: ON" else "LOOP: OFF", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Text(if (uiState.releaseLoopEnabled) "连续循环" else "单次播放", fontSize = 8.sp, color = Color.White.copy(alpha = 0.8f))
+                }
+            }
+
+            // Fullscreen / Collapse Panel
+            Button(
+                onClick = onCollapse,
+                modifier = Modifier
+                    .weight(0.9f)
+                    .height(44.dp)
+                    .testTag("release_fullscreen_button"),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF1E293B)
+                ),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("FULL", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF38BDF8))
+                    Text("全屏预览", fontSize = 8.sp, color = Color(0xFF94A3B8))
+                }
+            }
         }
     }
 }

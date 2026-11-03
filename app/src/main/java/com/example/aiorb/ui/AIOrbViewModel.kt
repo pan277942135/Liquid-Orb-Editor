@@ -11,20 +11,32 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import org.json.JSONObject
 
+enum class AIOrbLabMode {
+    RELEASE_PREVIEW,
+    FULL_LIFECYCLE
+}
+
 data class AIOrbUiState(
-    val lifeState: OrbLifeState = OrbLifeState.S1_IDLE,
-    val currentPhaseEvent: OrbPhaseEvent = OrbPhaseEvent.NONE,
+    val labMode: AIOrbLabMode = AIOrbLabMode.RELEASE_PREVIEW,
+    val lifeState: OrbLifeState = OrbLifeState.S2_ACTIVE,
+    val currentPhaseEvent: OrbPhaseEvent = OrbPhaseEvent.RELEASE,
     val isPaused: Boolean = false,
     val isPlaying: Boolean = true,
     val orbSizeScale: Float = 0.5f, // Default 0.5f (half of previous 80dp = 40dp)
-    val is80dp: Boolean = false, // Kept for backwards compatibility
+    val is80dp: Boolean = false, // Backwards compatibility
 
     // Current metrics
     val sceneElapsedMs: Long = 0L,
     val opticalReferenceElapsedMs: Long = 0L,
-    val wakeProgress: Float = 0f,
-    val filamentAlphaProgress: Float = 0f,
+    val wakeProgress: Float = 1f,
+    val filamentAlphaProgress: Float = 1f,
     val releaseProgress: Float = 0f,
+
+    // RELEASE Loop metrics
+    val releaseLoopEnabled: Boolean = true,
+    val releaseCycleIndex: Int = 0,
+    val releaseCycleElapsedMs: Long = 0L,
+    val isHold: Boolean = false,
 
     // Tuning Parameters
     val sunlightIntensity: Float = 1.0f,
@@ -36,7 +48,7 @@ data class AIOrbUiState(
     val filamentWidth: Float = 1.0f,
 
     // UI Panel state
-    val isBottomPanelExpanded: Boolean = true, // Collapsible bottom panel
+    val isBottomPanelExpanded: Boolean = true,
     val showTuningPanel: Boolean = true,
     val showCalibrationDialog: Boolean = false,
     val exportedJsonText: String? = null
@@ -49,6 +61,8 @@ class AIOrbViewModel(application: Application) : AndroidViewModel(application) {
 
     init {
         renderer.orbSizeScale = 0.5f
+        // Start directly in RELEASE PREVIEW loop mode by default
+        clock.startReleasePreview(loop = true)
     }
 
     private val _uiState = MutableStateFlow(AIOrbUiState())
@@ -63,28 +77,52 @@ class AIOrbViewModel(application: Application) : AndroidViewModel(application) {
             opticalReferenceElapsedMs = frame.opticalReferenceElapsedMs,
             wakeProgress = frame.wakeProgress,
             filamentAlphaProgress = frame.filamentAlphaProgress,
-            releaseProgress = frame.releaseProgress
+            releaseProgress = frame.releaseProgress,
+            releaseCycleIndex = frame.releaseCycleIndex,
+            releaseCycleElapsedMs = frame.releaseCycleElapsedMs,
+            releaseLoopEnabled = frame.releaseLoopEnabled,
+            isHold = frame.isHold
         )
     }
 
-    // === Three Core Visual Actions ===
+    // === Mode Switching ===
+
+    fun setLabMode(mode: AIOrbLabMode) {
+        if (_uiState.value.labMode == mode) return
+        _uiState.value = _uiState.value.copy(labMode = mode)
+        if (mode == AIOrbLabMode.RELEASE_PREVIEW) {
+            clock.startReleasePreview(loop = _uiState.value.releaseLoopEnabled)
+        } else {
+            clock.setReleasePreviewMode(false)
+            clock.reset()
+            clock.triggerWake()
+        }
+    }
+
+    fun toggleReleaseLoop() {
+        val nextLoop = !_uiState.value.releaseLoopEnabled
+        clock.setReleaseLoop(nextLoop)
+        _uiState.value = _uiState.value.copy(releaseLoopEnabled = nextLoop)
+    }
+
+    // === Core Visual Actions ===
 
     fun triggerWake() {
+        _uiState.value = _uiState.value.copy(labMode = AIOrbLabMode.FULL_LIFECYCLE, isPlaying = true)
         clock.triggerWake()
-        _uiState.value = _uiState.value.copy(isPlaying = true)
     }
 
     fun triggerBreath() {
-        clock.triggerBreath()
         _uiState.value = _uiState.value.copy(isPlaying = true)
+        clock.triggerBreath()
     }
 
     fun triggerRelease() {
-        clock.triggerRelease()
         _uiState.value = _uiState.value.copy(isPlaying = true)
+        clock.triggerRelease()
     }
 
-    // === General Playback Controls ===
+    // === Playback Controls ===
 
     fun togglePlayPause() {
         if (clock.isPaused) {
@@ -97,19 +135,31 @@ class AIOrbViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun replay() {
-        clock.reset()
-        clock.triggerWake()
-        _uiState.value = _uiState.value.copy(isPlaying = true, isPaused = false)
+        if (_uiState.value.labMode == AIOrbLabMode.RELEASE_PREVIEW) {
+            // Replay release without executing wake
+            clock.replayRelease()
+            _uiState.value = _uiState.value.copy(isPlaying = true, isPaused = false)
+        } else {
+            // Full lifecycle replay wake
+            clock.reset()
+            clock.triggerWake()
+            _uiState.value = _uiState.value.copy(isPlaying = true, isPaused = false)
+        }
     }
 
     fun reset() {
-        clock.reset()
-        _uiState.value = _uiState.value.copy(
-            isPlaying = true,
-            isPaused = false,
-            lifeState = OrbLifeState.S1_IDLE,
-            currentPhaseEvent = OrbPhaseEvent.NONE
-        )
+        if (_uiState.value.labMode == AIOrbLabMode.RELEASE_PREVIEW) {
+            clock.replayRelease()
+            _uiState.value = _uiState.value.copy(isPlaying = true, isPaused = false)
+        } else {
+            clock.reset()
+            _uiState.value = _uiState.value.copy(
+                isPlaying = true,
+                isPaused = false,
+                lifeState = OrbLifeState.S1_IDLE,
+                currentPhaseEvent = OrbPhaseEvent.NONE
+            )
+        }
     }
 
     fun updateOrbSizeScale(scale: Float) {
@@ -201,6 +251,9 @@ class AIOrbViewModel(application: Application) : AndroidViewModel(application) {
         val json = JSONObject().apply {
             put("contractId", "YUJIAN_AI_ORB_WAKE_BREATH_RELEASE_VISUAL_PROFILE_V1_1")
             put("status", "CALIBRATION_CANDIDATE")
+            put("labMode", s.labMode.name)
+            put("releaseLoopEnabled", s.releaseLoopEnabled)
+            put("releaseCycleIndex", s.releaseCycleIndex)
             put("sunlightIntensityMultiplier", s.sunlightIntensity)
             put("refractionIntensityMultiplier", s.refractionIntensity)
             put("causticsIntensityMultiplier", s.causticsIntensity)

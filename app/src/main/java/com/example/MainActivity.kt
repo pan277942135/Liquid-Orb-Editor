@@ -36,7 +36,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = Color(0xFF070913)
                 ) {
-                    var currentMode by remember { mutableStateOf("glyph_lab") }
+                    var currentMode by remember { mutableStateOf("ai_orb_lab") }
 
                     when (currentMode) {
                         "glyph_lab" -> {

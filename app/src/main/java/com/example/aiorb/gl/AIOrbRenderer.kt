@@ -16,6 +16,24 @@ import kotlin.math.PI
 import kotlin.math.sin
 import kotlin.math.sqrt
 
+/**
+ * Preallocated vertex and UV buffer holder for zero per-frame allocation.
+ */
+class FilamentBufferHolder(
+    val path: FilamentPath,
+    val maxSubdivisions: Int = 32
+) {
+    val vertexCount = (maxSubdivisions + 1) * 2
+
+    val posBuffer: FloatBuffer = ByteBuffer.allocateDirect(vertexCount * 2 * 4)
+        .order(ByteOrder.nativeOrder())
+        .asFloatBuffer()
+
+    val uvBuffer: FloatBuffer = ByteBuffer.allocateDirect(vertexCount * 2 * 4)
+        .order(ByteOrder.nativeOrder())
+        .asFloatBuffer()
+}
+
 class AIOrbRenderer(private val context: Context) {
 
     val sceneClock = OrbSceneClock()
@@ -88,12 +106,20 @@ class AIOrbRenderer(private val context: Context) {
 
     // Filament Uniform & Attrib locations
     private var fPositionLoc = -1
-    private var fColorLoc = -1
+    private var fUvLoc = -1
     private var fResolutionLoc = -1
     private var fScaleLoc = -1
+    private var fBaseColorLoc = -1
+    private var fHighlightColorLoc = -1
+    private var fRefractionColorLoc = -1
+    private var fLayerParamsLoc = -1
 
-    // Data structures
-    private var filamentPaths: List<FilamentPath> = emptyList()
+    // Data structures & Pre-allocated buffer holders (Zero per-frame allocations)
+    var filamentPaths: List<FilamentPath> = emptyList()
+        private set
+    private var backHolders: List<FilamentBufferHolder> = emptyList()
+    private var frontHolders: List<FilamentBufferHolder> = emptyList()
+
     private var grassPaths: Map<String, GrassLeafPath> = emptyMap()
 
     private var viewWidth = 1
@@ -105,6 +131,12 @@ class AIOrbRenderer(private val context: Context) {
         loadTextures()
         filamentPaths = FilamentPath.loadAllFromAssets(context)
         grassPaths = GrassLeafPath.loadFromAssets(context)
+
+        // Preallocate and pre-group holders by BACK/FRONT depth once
+        val holders = filamentPaths.map { FilamentBufferHolder(it, 32) }
+        backHolders = holders.filter { it.path.depth == FilamentDepth.BACK }
+        frontHolders = holders.filter { it.path.depth == FilamentDepth.FRONT }
+
         sceneClock.start()
     }
 
@@ -119,7 +151,6 @@ class AIOrbRenderer(private val context: Context) {
 
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
         GLES20.glEnable(GLES20.GL_BLEND)
-        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA)
 
         // Compute breath scale (centered uniform scale)
         val breathAmp = if (frame.lifeState == OrbLifeState.S2_ACTIVE) 0.018f else 0.008f
@@ -128,18 +159,19 @@ class AIOrbRenderer(private val context: Context) {
         val currentScale = (1.0f + breathAmp * sin(breathPhase).toFloat()) * orbSizeScale
 
         // 1. Render L03 BACK Filaments (G01 & A01)
-        drawFilaments(frame, currentScale, FilamentDepth.BACK)
+        drawFilamentHolders(backHolders, frame, currentScale)
 
         // 2. Render Core + L01 Halo + L04 Caustics + L05 Grass + L02 Droplets + L07 Sunlight
         drawCore(frame, currentScale)
 
         // 3. Render L03 FRONT Filaments (G02, A02, C01)
-        drawFilaments(frame, currentScale, FilamentDepth.FRONT)
+        drawFilamentHolders(frontHolders, frame, currentScale)
     }
 
     private fun drawCore(frame: OrbSceneFrame, currentScale: Float) {
         if (coreProgramId == 0 || coreTextureId == 0) return
 
+        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA)
         GLES20.glUseProgram(coreProgramId)
 
         // Attributes
@@ -215,52 +247,53 @@ class AIOrbRenderer(private val context: Context) {
         GLES20.glDisableVertexAttribArray(aPosLoc)
     }
 
-    private fun drawFilaments(frame: OrbSceneFrame, currentScale: Float, targetDepth: FilamentDepth) {
-        if (filamentProgramId == 0 || filamentPaths.isEmpty()) return
+    private fun drawFilamentHolders(
+        holders: List<FilamentBufferHolder>,
+        frame: OrbSceneFrame,
+        currentScale: Float
+    ) {
+        if (filamentProgramId == 0 || holders.isEmpty()) return
         if (frame.filamentAlphaProgress <= 0.01f) return // Filaments hidden in S1
 
+        // Use premultiplied source-over blend for R06 layered water ribbon optics
+        GLES20.glBlendFunc(GLES20.GL_ONE, GLES20.GL_ONE_MINUS_SRC_ALPHA)
         GLES20.glUseProgram(filamentProgramId)
+
         GLES20.glUniform2f(fResolutionLoc, viewWidth.toFloat(), viewHeight.toFloat())
         GLES20.glUniform1f(fScaleLoc, currentScale)
 
-        val pathsForDepth = filamentPaths.filter { it.depth == targetDepth }
-        val isReturn = frame.currentPhaseEvent == OrbPhaseEvent.RETURN
+        val headBoost = when (frame.currentPhaseEvent) {
+            OrbPhaseEvent.RELEASE -> 1.18f
+            OrbPhaseEvent.RETURN -> 1.07f
+            else -> 1.0f
+        }
+        val alphaMult = (1.28f * frame.filamentAlphaProgress * filamentAlphaMultiplier).coerceIn(0f, 1.4f)
 
-        for (path in pathsForDepth) {
-            val (headS, tailS) = path.computeHeadAndTail(frame.sceneElapsedMs, frame.releaseProgress, isReturn)
-            if (headS <= tailS) continue
+        for (holder in holders) {
+            val path = holder.path
+            val kin = path.computeKinematics(
+                elapsedMs = frame.sceneElapsedMs,
+                releaseCycleElapsedMs = frame.releaseCycleElapsedMs,
+                phaseEvent = frame.currentPhaseEvent,
+                isHold = frame.isHold
+            )
 
-            // Build dynamic ribbon mesh along [tailS, headS]
-            val subdivisions = 24
+            if (kin.headU <= kin.tailU) continue
+
+            // Build ribbon mesh into preallocated buffer without heap allocation
+            val subdivisions = holder.maxSubdivisions
             val vertexCount = (subdivisions + 1) * 2
-            val vertexBuffer = ByteBuffer.allocateDirect(vertexCount * 2 * 4)
-                .order(ByteOrder.nativeOrder()).asFloatBuffer()
-            val colorBuffer = ByteBuffer.allocateDirect(vertexCount * 4 * 4)
-                .order(ByteOrder.nativeOrder()).asFloatBuffer()
 
-            val mat = path.materialType
-            val baseCol = mat.baseColor
-            val r = Color.red(baseCol) / 255f
-            val g = Color.green(baseCol) / 255f
-            val b = Color.blue(baseCol) / 255f
+            holder.posBuffer.clear()
+            holder.uvBuffer.clear()
 
-            // Apply first pass visibility gain (1.28x), capped at 0.82
-            val baseAlpha = ((path.alphaMin + path.alphaMax) * 0.5f * 1.28f * frame.filamentAlphaProgress * filamentAlphaMultiplier)
-                .coerceIn(0f, 0.82f)
-
-            // Release head brightness boost (1.18x) or return (1.07x)
-            val headBoost = if (frame.currentPhaseEvent == OrbPhaseEvent.RELEASE) 1.18f
-                            else if (frame.currentPhaseEvent == OrbPhaseEvent.RETURN) 1.07f
-                            else 1.0f
-
-            val strokeWidthD = ((path.widthMinDp + path.widthMaxDp) * 0.5f * mat.widthMultiplier * filamentWidthMultiplier / 80f)
+            val strokeWidthD = ((path.widthMinDp + path.widthMaxDp) * 0.5f * path.materialConfig.widthMultiplier * filamentWidthMultiplier / 80f)
 
             for (step in 0..subdivisions) {
                 val frac = step.toFloat() / subdivisions
-                val s = tailS + (headS - tailS) * frac
+                val s = kin.tailU + (kin.headU - kin.tailU) * frac
                 val pt = path.getPointAtArcFraction(s)
 
-                // Direction tangent & normal
                 val nextPt = path.getPointAtArcFraction((s + 0.02f).coerceAtMost(1f))
                 val tdx = nextPt.x - pt.x
                 val tdy = nextPt.y - pt.y
@@ -268,33 +301,73 @@ class AIOrbRenderer(private val context: Context) {
                 val nx = -tdy / tlen * strokeWidthD * 0.5f
                 val ny = tdx / tlen * strokeWidthD * 0.5f
 
-                // Vertex 1 (positive normal)
-                vertexBuffer.put(pt.x + nx)
-                vertexBuffer.put(pt.y + ny)
+                // Vertex 1 (positive transverse normal)
+                holder.posBuffer.put(pt.x + nx)
+                holder.posBuffer.put(pt.y + ny)
+                holder.uvBuffer.put(frac)
+                holder.uvBuffer.put(1.0f)
 
-                // Vertex 2 (negative normal)
-                vertexBuffer.put(pt.x - nx)
-                vertexBuffer.put(pt.y - ny)
-
-                // Alpha taper from tail to head
-                val segAlpha = (baseAlpha * frac * headBoost).coerceIn(0f, 1f)
-                colorBuffer.put(r); colorBuffer.put(g); colorBuffer.put(b); colorBuffer.put(segAlpha)
-                colorBuffer.put(r); colorBuffer.put(g); colorBuffer.put(b); colorBuffer.put(segAlpha)
+                // Vertex 2 (negative transverse normal)
+                holder.posBuffer.put(pt.x - nx)
+                holder.posBuffer.put(pt.y - ny)
+                holder.uvBuffer.put(frac)
+                holder.uvBuffer.put(-1.0f)
             }
 
-            vertexBuffer.position(0)
-            colorBuffer.position(0)
+            holder.posBuffer.position(0)
+            holder.uvBuffer.position(0)
 
-            GLES20.glVertexAttribPointer(fPositionLoc, 2, GLES20.GL_FLOAT, false, 0, vertexBuffer)
+            // Feed R06 material layers
+            val mat = path.materialConfig
+            val baseC = mat.baseColor
+            val highC = mat.highlightColor
+            val refrC = mat.refractionColor
+            val baseAlphaMax = ((path.alphaMin + path.alphaMax) * 0.5f).coerceIn(0.18f, 0.75f)
+
+            GLES20.glUniform4f(
+                fBaseColorLoc,
+                Color.red(baseC) / 255f,
+                Color.green(baseC) / 255f,
+                Color.blue(baseC) / 255f,
+                baseAlphaMax
+            )
+            GLES20.glUniform4f(
+                fHighlightColorLoc,
+                Color.red(highC) / 255f,
+                Color.green(highC) / 255f,
+                Color.blue(highC) / 255f,
+                0.80f
+            )
+            GLES20.glUniform4f(
+                fRefractionColorLoc,
+                Color.red(refrC) / 255f,
+                Color.green(refrC) / 255f,
+                Color.blue(refrC) / 255f,
+                0.40f
+            )
+
+            val isGold = if (path.materialType == FilamentMaterialType.WARM_GOLD_FILAMENT) 1.0f else 0.0f
+            val specLen = if (isGold > 0.5f) 0.18f else 0.12f
+            GLES20.glUniform4f(
+                fLayerParamsLoc,
+                headBoost,
+                alphaMult,
+                specLen,
+                isGold
+            )
+
+            // Bind attributes
+            GLES20.glVertexAttribPointer(fPositionLoc, 2, GLES20.GL_FLOAT, false, 0, holder.posBuffer)
             GLES20.glEnableVertexAttribArray(fPositionLoc)
 
-            GLES20.glVertexAttribPointer(fColorLoc, 4, GLES20.GL_FLOAT, false, 0, colorBuffer)
-            GLES20.glEnableVertexAttribArray(fColorLoc)
+            GLES20.glVertexAttribPointer(fUvLoc, 2, GLES20.GL_FLOAT, false, 0, holder.uvBuffer)
+            GLES20.glEnableVertexAttribArray(fUvLoc)
 
+            // Draw triangle strip ribbon
             GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, vertexCount)
 
             GLES20.glDisableVertexAttribArray(fPositionLoc)
-            GLES20.glDisableVertexAttribArray(fColorLoc)
+            GLES20.glDisableVertexAttribArray(fUvLoc)
         }
     }
 
@@ -339,16 +412,20 @@ class AIOrbRenderer(private val context: Context) {
             uDroplet3AlphaLoc = GLES20.glGetUniformLocation(coreProgramId, "u_droplet3Alpha")
         }
 
-        // 2. Filament Program
+        // 2. Filament Program (with 4-layer R06 optics)
         val fVert = compileShader(GLES20.GL_VERTEX_SHADER, FilamentShader.VERTEX_SHADER)
         val fFrag = compileShader(GLES20.GL_FRAGMENT_SHADER, FilamentShader.FRAGMENT_SHADER)
         filamentProgramId = createAndLinkProgram(fVert, fFrag)
 
         if (filamentProgramId != 0) {
             fPositionLoc = GLES20.glGetAttribLocation(filamentProgramId, "a_position")
-            fColorLoc = GLES20.glGetAttribLocation(filamentProgramId, "a_color")
+            fUvLoc = GLES20.glGetAttribLocation(filamentProgramId, "a_uv")
             fResolutionLoc = GLES20.glGetUniformLocation(filamentProgramId, "u_resolution")
             fScaleLoc = GLES20.glGetUniformLocation(filamentProgramId, "u_scale")
+            fBaseColorLoc = GLES20.glGetUniformLocation(filamentProgramId, "u_baseColor")
+            fHighlightColorLoc = GLES20.glGetUniformLocation(filamentProgramId, "u_highlightColor")
+            fRefractionColorLoc = GLES20.glGetUniformLocation(filamentProgramId, "u_refractionColor")
+            fLayerParamsLoc = GLES20.glGetUniformLocation(filamentProgramId, "u_layerParams")
         }
     }
 
