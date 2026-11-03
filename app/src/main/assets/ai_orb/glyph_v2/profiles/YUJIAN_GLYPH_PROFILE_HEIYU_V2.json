@@ -1,0 +1,69 @@
+{
+  "profileVersion": "YUJIAN_GLYPH_V2_FROZEN",
+  "speciesName": "黑鱼",
+  "scientificName": "Channa argus",
+  "fontFamily": "MA_SHAN_ZHENG",
+  "fontLabel": "马善政楷书",
+  "geometry": {
+    "maxStretchX": 1.58,
+    "maxStretchY": 0.84,
+    "finalStretchX": 1.28,
+    "finalStretchY": 0.95
+  },
+  "optics": {
+    "ribbonIntensity": 1.0,
+    "fluidTurbulence": 1.25,
+    "crystalRefraction": 1.62,
+    "specularGloss": 4.5,
+    "inkOpacity": 0.9,
+    "goldFilamentAlpha": 0.7,
+    "edgeRefractionWidth": 0.08,
+    "outerGlow": 1.45
+  },
+  "palette": {
+    "lakeInk": "#173E49",
+    "lakeTeal": "#2E8B83",
+    "waterCyan": "#67C8D2",
+    "deepWater": "#174F5D",
+    "warmGold": "#D8B36A",
+    "sunGlint": "#F6ECC9"
+  },
+  "keyframes": {
+    "KF01": {
+      "timeMs": 0,
+      "progress": 0.0,
+      "nameZh": "水晶球体",
+      "nameEn": "Orb Sphere"
+    },
+    "KF02": {
+      "timeMs": 480,
+      "progress": 0.2,
+      "nameZh": "水核横向舒展",
+      "nameEn": "Water Core Stretch"
+    },
+    "KF03": {
+      "timeMs": 960,
+      "progress": 0.4,
+      "nameZh": "水光流带释放",
+      "nameEn": "Water Ribbon Release"
+    },
+    "KF04": {
+      "timeMs": 1440,
+      "progress": 0.6,
+      "nameZh": "中文初凝",
+      "nameEn": "Glyph Initial"
+    },
+    "KF05": {
+      "timeMs": 1920,
+      "progress": 0.8,
+      "nameZh": "水晶书法凝结",
+      "nameEn": "Glyph Crystallize"
+    },
+    "KF06": {
+      "timeMs": 2400,
+      "progress": 1.0,
+      "nameZh": "深湖蓝文字稳定",
+      "nameEn": "Glyph Settled"
+    }
+  }
+}

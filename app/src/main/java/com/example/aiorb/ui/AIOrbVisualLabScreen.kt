@@ -81,6 +81,7 @@ import java.util.Locale
 @Composable
 fun AIOrbVisualLabScreen(
     viewModel: AIOrbViewModel,
+    onSwitchMode: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -126,7 +127,8 @@ fun AIOrbVisualLabScreen(
                 onReset = { viewModel.reset() },
                 onToggleSize = { viewModel.toggleSize() },
                 onTogglePanel = { viewModel.toggleBottomPanel() },
-                onExport = { viewModel.exportCalibrationJson() }
+                onExport = { viewModel.exportCalibrationJson() },
+                onSwitchMode = onSwitchMode
             )
 
             // Real-time HUD info
@@ -159,7 +161,8 @@ private fun TopLabHeader(
     onReset: () -> Unit,
     onToggleSize: () -> Unit,
     onTogglePanel: () -> Unit,
-    onExport: () -> Unit
+    onExport: () -> Unit,
+    onSwitchMode: (String) -> Unit
 ) {
     Surface(
         modifier = Modifier
@@ -200,6 +203,25 @@ private fun TopLabHeader(
             }
 
             Row(verticalAlignment = Alignment.CenterVertically) {
+                // Switch to 06 凝字实验室
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = Color(0xFF1E293B),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0x4467C8D2)),
+                    modifier = Modifier
+                        .clickable { onSwitchMode("glyph_lab") }
+                        .testTag("switch_to_glyph_lab_button")
+                ) {
+                    Text(
+                        text = "06凝字",
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF67C8D2),
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 4.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(4.dp))
+
                 // Size toggle badge
                 Surface(
                     shape = RoundedCornerShape(8.dp),

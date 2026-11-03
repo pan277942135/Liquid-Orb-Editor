@@ -367,7 +367,40 @@ object OrbPresets {
         )
     )
 
+    // 14. Yujian Water Ink (独立渔见·水墨凝字模式)
+    val yujianWaterInk: OrbConfig = OrbConfig(
+        presetId = "yujian_water_ink",
+        nameEn = "Yujian Water Ink",
+        nameZh = "渔见·水墨凝字",
+        speed = 0.90f,
+        radius = 0.65f,
+        zoom = 1.30f,
+        warp = 1.25f,
+        ridgeAmt = 1.65f,
+        sharp = 2.8f,
+        shade = 0.85f,
+        sheen = 1.75f,
+        gloss = 4.5f,
+        refraction = 1.60f,
+        dispersion = 0.70f,
+        roughness = 0.10f,
+        glow = 1.65f,
+        edgeSoftness = 0.06f,
+        color1 = Vec3Color(0.404f, 0.784f, 0.824f),     // Water Cyan #67C8D2
+        color2 = Vec3Color(0.180f, 0.545f, 0.514f),     // Lake Teal #2E8B83
+        accentColor = Vec3Color(0.847f, 0.702f, 0.416f), // Warm Gold #D8B36A
+        coreColor = Vec3Color(0.090f, 0.243f, 0.286f),   // Deep Lake Ink #173E49
+        glowColor = Vec3Color(0.090f, 0.310f, 0.365f),   // Deep Water #174F5D
+        audioReactive = false
+    )
+
+    /**
+     * Presets including the standalone Yujian Water Ink preset
+     */
+    val allWithYujian: List<OrbConfig> = all + yujianWaterInk
+
     fun getById(id: String): OrbConfig {
+        if (id == "yujian_water_ink") return yujianWaterInk
         return all.firstOrNull { it.presetId == id } ?: all.first()
     }
 }

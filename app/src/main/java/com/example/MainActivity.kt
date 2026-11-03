@@ -15,12 +15,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.example.aiorb.ui.AIOrbViewModel
 import com.example.aiorb.ui.AIOrbVisualLabScreen
+import com.example.glyph.ui.GlyphLabScreen
+import com.example.glyph.ui.GlyphLabViewModel
 import com.example.ui.OrbScreen
 import com.example.ui.OrbViewModel
 import com.example.ui.theme.MyApplicationTheme
 
 class MainActivity : ComponentActivity() {
 
+    private val glyphLabViewModel: GlyphLabViewModel by viewModels()
     private val aiOrbViewModel: AIOrbViewModel by viewModels()
     private val liquidOrbViewModel: OrbViewModel by viewModels()
 
@@ -33,12 +36,27 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = Color(0xFF070913)
                 ) {
-                    var currentMode by remember { mutableStateOf("ai_orb_lab") }
+                    var currentMode by remember { mutableStateOf("glyph_lab") }
 
-                    if (currentMode == "ai_orb_lab") {
-                        AIOrbVisualLabScreen(viewModel = aiOrbViewModel)
-                    } else {
-                        OrbScreen(viewModel = liquidOrbViewModel)
+                    when (currentMode) {
+                        "glyph_lab" -> {
+                            GlyphLabScreen(
+                                viewModel = glyphLabViewModel,
+                                onSwitchMode = { currentMode = it }
+                            )
+                        }
+                        "ai_orb_lab" -> {
+                            AIOrbVisualLabScreen(
+                                viewModel = aiOrbViewModel,
+                                onSwitchMode = { currentMode = it }
+                            )
+                        }
+                        else -> {
+                            OrbScreen(
+                                viewModel = liquidOrbViewModel,
+                                onSwitchMode = { currentMode = it }
+                            )
+                        }
                     }
                 }
             }

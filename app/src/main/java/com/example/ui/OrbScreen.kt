@@ -90,6 +90,7 @@ import kotlinx.coroutines.isActive
 @Composable
 fun OrbScreen(
     viewModel: OrbViewModel,
+    onSwitchMode: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
