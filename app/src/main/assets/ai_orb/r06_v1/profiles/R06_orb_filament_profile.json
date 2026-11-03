@@ -1,0 +1,845 @@
+{
+  "schema_version": "2.0",
+  "status": "V2_VISUAL_CANDIDATE_PENDING_PRODUCT_REVIEW",
+  "reference": "236493.png [exact source SHA available in manifest]",
+  "reuse": "OrbWaterLightRibbons existing three-material backend; map 3 legacy layers to 5 PATHS without double-drawing",
+  "preserve_legacy_while_unapproved": true,
+  "paths": [
+    {
+      "id": "G01",
+      "material": "green",
+      "color": "#5B8F78",
+      "z": "BACK",
+      "period_ms": 6100,
+      "phase": 0.07,
+      "core_width_dp": [
+        1.5,
+        3.2
+      ],
+      "alpha": [
+        0.18,
+        0.35
+      ],
+      "wave_normal_amplitude_D": 0.007,
+      "control_point_deformation": {
+        "period_ms": 10065,
+        "amplitude_D": 0.006,
+        "deterministic": true
+      },
+      "material_profile_id": "green_water_ribbon",
+      "centerline_ref": "assets/paths/R06_orb_filament_paths.svg#G01",
+      "path_length_D": 2.118582,
+      "depth": "BACK",
+      "width_dp_min_max": [
+        1.5,
+        3.2
+      ],
+      "alpha_min_max": [
+        0.18,
+        0.35
+      ],
+      "motion_clock": "MotionClock.opticalReferenceElapsedMs",
+      "deformation_amplitude_D": 0.006,
+      "max_outer_radius_D": 0.675,
+      "material_width_multiplier": 1.75,
+      "bound_deformation_amplitude_D": 0.007
+    },
+    {
+      "id": "G02",
+      "material": "green",
+      "color": "#5B8F78",
+      "z": "FRONT",
+      "period_ms": 5300,
+      "phase": 0.34,
+      "core_width_dp": [
+        1.4,
+        2.7
+      ],
+      "alpha": [
+        0.18,
+        0.38
+      ],
+      "wave_normal_amplitude_D": 0.007,
+      "control_point_deformation": {
+        "period_ms": 8745,
+        "amplitude_D": 0.006,
+        "deterministic": true
+      },
+      "material_profile_id": "green_water_ribbon",
+      "centerline_ref": "assets/paths/R06_orb_filament_paths.svg#G02",
+      "path_length_D": 1.430731,
+      "depth": "FRONT",
+      "width_dp_min_max": [
+        1.4,
+        2.7
+      ],
+      "alpha_min_max": [
+        0.18,
+        0.38
+      ],
+      "motion_clock": "MotionClock.opticalReferenceElapsedMs",
+      "deformation_amplitude_D": 0.006,
+      "max_outer_radius_D": 0.675,
+      "material_width_multiplier": 1.75,
+      "bound_deformation_amplitude_D": 0.007
+    },
+    {
+      "id": "A01",
+      "material": "gold",
+      "color": "#D8BC87",
+      "z": "BACK",
+      "period_ms": 3700,
+      "phase": 0.59,
+      "core_width_dp": [
+        0.55,
+        0.92
+      ],
+      "alpha": [
+        0.45,
+        0.69
+      ],
+      "wave_normal_amplitude_D": 0.004,
+      "control_point_deformation": {
+        "period_ms": 6105,
+        "amplitude_D": 0.006,
+        "deterministic": true
+      },
+      "material_profile_id": "warm_gold_filament",
+      "centerline_ref": "assets/paths/R06_orb_filament_paths.svg#A01",
+      "path_length_D": 1.894683,
+      "depth": "BACK",
+      "width_dp_min_max": [
+        0.55,
+        0.92
+      ],
+      "alpha_min_max": [
+        0.45,
+        0.69
+      ],
+      "motion_clock": "MotionClock.opticalReferenceElapsedMs",
+      "deformation_amplitude_D": 0.004,
+      "max_outer_radius_D": 0.675,
+      "material_width_multiplier": 1.0,
+      "bound_deformation_amplitude_D": 0.006
+    },
+    {
+      "id": "A02",
+      "material": "gold",
+      "color": "#D8BC87",
+      "z": "FRONT",
+      "period_ms": 2900,
+      "phase": 0.81,
+      "core_width_dp": [
+        0.55,
+        1
+      ],
+      "alpha": [
+        0.45,
+        0.72
+      ],
+      "wave_normal_amplitude_D": 0.004,
+      "control_point_deformation": {
+        "period_ms": 4785,
+        "amplitude_D": 0.006,
+        "deterministic": true
+      },
+      "material_profile_id": "warm_gold_filament",
+      "centerline_ref": "assets/paths/R06_orb_filament_paths.svg#A02",
+      "path_length_D": 1.539713,
+      "depth": "FRONT",
+      "width_dp_min_max": [
+        0.55,
+        1
+      ],
+      "alpha_min_max": [
+        0.45,
+        0.72
+      ],
+      "motion_clock": "MotionClock.opticalReferenceElapsedMs",
+      "deformation_amplitude_D": 0.004,
+      "max_outer_radius_D": 0.675,
+      "material_width_multiplier": 1.0,
+      "bound_deformation_amplitude_D": 0.006
+    },
+    {
+      "id": "C01",
+      "material": "cyan",
+      "color": "#348CA6",
+      "z": "FRONT",
+      "period_ms": 4400,
+      "phase": 0.23,
+      "core_width_dp": [
+        1.4,
+        2.8
+      ],
+      "alpha": [
+        0.18,
+        0.4
+      ],
+      "wave_normal_amplitude_D": 0.007,
+      "control_point_deformation": {
+        "period_ms": 7260,
+        "amplitude_D": 0.006,
+        "deterministic": true
+      },
+      "material_profile_id": "cyan_water_ribbon",
+      "centerline_ref": "assets/paths/R06_orb_filament_paths.svg#C01",
+      "path_length_D": 1.49934,
+      "depth": "FRONT",
+      "width_dp_min_max": [
+        1.4,
+        2.8
+      ],
+      "alpha_min_max": [
+        0.18,
+        0.4
+      ],
+      "motion_clock": "MotionClock.opticalReferenceElapsedMs",
+      "deformation_amplitude_D": 0.006,
+      "max_outer_radius_D": 0.675,
+      "material_width_multiplier": 1.5,
+      "bound_deformation_amplitude_D": 0.007
+    }
+  ],
+  "speed_phase_distance": [
+    [
+      0,
+      0
+    ],
+    [
+      0.18,
+      0.105
+    ],
+    [
+      0.45,
+      0.43
+    ],
+    [
+      0.75,
+      0.8
+    ],
+    [
+      0.92,
+      0.95
+    ],
+    [
+      1,
+      1
+    ]
+  ],
+  "u_map": "sample arc-length LUT (128 samples/path), not directly parameter t; invert cumulative arc-length",
+  "rendering": {
+    "back_before_core": true,
+    "front_after_core": true,
+    "pre_multiply_alpha": true,
+    "taper": "numeric head/body/tail width and luminance profiles in material definitions",
+    "closed_orbits": false,
+    "allow_compound_glow": false,
+    "no_per_frame_path_rng": true,
+    "front_inner_safety_fade_radius_D": [
+      0.3,
+      0.48
+    ],
+    "core_art_immutable": true,
+    "base_alpha": "source-over premultiplied",
+    "legacy_renderer_policy": "replace, never double draw"
+  },
+  "events": {
+    "RELEASE": {
+      "state": "S2",
+      "direction": "OUTWARD",
+      "position_rule": "continue_last_arc_length_u",
+      "head_luminance_multiplier": 1.18,
+      "switch_ms": 260,
+      "tail_continuity": true,
+      "switch_transition_ms": 260,
+      "position_rule_text": "continue last arc-length u; tail remains continuous"
+    },
+    "RETURN": {
+      "state": "S2",
+      "direction": "INWARD",
+      "position_rule": "retain_last_arc_length_u_reverse_velocity",
+      "head_luminance_multiplier": 1.07,
+      "switch_ms": 260,
+      "c1_speed_ramp_ms": 260,
+      "clock_reset": false,
+      "position_rule_text": "on switch keep last u, reverse sign of du/dt with C1 speed ramp; do not teleport to path end"
+    },
+    "EXIT": {
+      "rule": "fade_existing_tail_after_head_reaches_endpoint",
+      "clock_reset": false,
+      "rule_text": "fade existing tail after head reaches endpoint; do not reset independent clocks"
+    }
+  },
+  "performance": {
+    "normal_steps_per_path": 96,
+    "low_steps_per_path": 48,
+    "reduce_motion": "freeze deterministic sample at phase 0.37"
+  },
+  "coordinate_contract": {
+    "units": "OrbLocal D",
+    "max_outside_dp_at_80dp": 14,
+    "max_outer_radius_D": 0.675,
+    "size_scaling": {
+      "68dp": {
+        "path_scale": 0.85,
+        "stroke_scale": "dp_constant"
+      },
+      "80dp": {
+        "path_scale": 1.0,
+        "stroke_scale": "dp_constant"
+      }
+    },
+    "alpha_compositing": "premultiplied source-over; no black matte"
+  },
+  "materials": {
+    "green_water_ribbon": {
+      "material_id": "green_water_ribbon",
+      "material_width_multiplier": 1.75,
+      "base_color": "#5B8F78",
+      "highlight_color": "#A9D9C5",
+      "refraction_color": "#326F67",
+      "blend_mode": "SRC_OVER_PREMULTIPLIED",
+      "depth_model": "per_path_BACK_or_FRONT",
+      "layer_composition": [
+        {
+          "id": "outer_feather",
+          "width_multiplier": 1.8,
+          "alpha_max": 0.1,
+          "blur_sigma_dp": 1.4,
+          "color": "#326F67"
+        },
+        {
+          "id": "translucent_body",
+          "width_multiplier": 1.0,
+          "alpha_max": 0.6,
+          "color": "#5B8F78",
+          "center_luminance": 1.0,
+          "edge_luminance": 0.38
+        },
+        {
+          "id": "inner_refractive_band",
+          "width_multiplier": 0.48,
+          "offset_normal_fraction": -0.1,
+          "alpha_max": 0.34,
+          "color": "#326F67"
+        },
+        {
+          "id": "specular_highlight",
+          "width_multiplier": 0.24,
+          "length_fraction": 0.13,
+          "alpha_max": 0.68,
+          "color": "#A9D9C5",
+          "travels_with_head": true
+        }
+      ],
+      "cross_section": [
+        {
+          "offset": -1.0,
+          "opacity": 0.02
+        },
+        {
+          "offset": -0.62,
+          "opacity": 0.19
+        },
+        {
+          "offset": -0.22,
+          "opacity": 0.38
+        },
+        {
+          "offset": 0.0,
+          "opacity": 0.46
+        },
+        {
+          "offset": 0.28,
+          "opacity": 0.34
+        },
+        {
+          "offset": 0.72,
+          "opacity": 0.15
+        },
+        {
+          "offset": 1.0,
+          "opacity": 0.02
+        }
+      ],
+      "width_profile": [
+        {
+          "u": 0.0,
+          "width_multiplier": 0.28
+        },
+        {
+          "u": 0.1,
+          "width_multiplier": 0.55
+        },
+        {
+          "u": 0.32,
+          "width_multiplier": 0.82
+        },
+        {
+          "u": 0.58,
+          "width_multiplier": 0.92
+        },
+        {
+          "u": 0.82,
+          "width_multiplier": 0.72
+        },
+        {
+          "u": 1.0,
+          "width_multiplier": 0.46
+        }
+      ],
+      "opacity_profile": [
+        {
+          "u": 0.0,
+          "alpha_multiplier": 0.1
+        },
+        {
+          "u": 0.12,
+          "alpha_multiplier": 0.5
+        },
+        {
+          "u": 0.45,
+          "alpha_multiplier": 0.9
+        },
+        {
+          "u": 0.76,
+          "alpha_multiplier": 0.78
+        },
+        {
+          "u": 1.0,
+          "alpha_multiplier": 0.36
+        }
+      ],
+      "luminance_profile": {
+        "head": 1.35,
+        "body": 0.82,
+        "tail": 0.22
+      },
+      "specular_highlight": {
+        "shape": "elliptical_head_plus_moving_band",
+        "head_radius_dp": [
+          0.55,
+          0.95
+        ],
+        "head_alpha": 0.72,
+        "band_length_fraction": 0.13,
+        "phase_binding": "path_arc_length_u"
+      },
+      "feather": {
+        "sigma_dp": 1.4,
+        "alpha_max": 0.1,
+        "color": "#326F67"
+      },
+      "motion_binding": {
+        "clock": "MotionClock.opticalReferenceElapsedMs",
+        "speed_curve": "smoothstep_distance_table",
+        "phase_source": "path.phase",
+        "head_position": "ping_pong_smooth(progress)",
+        "trail_length_fraction": 0.23,
+        "path_deformation": "deterministic_sine_normal_offset",
+        "deformation_amplitude_D": 0.006
+      }
+    },
+    "cyan_water_ribbon": {
+      "material_id": "cyan_water_ribbon",
+      "material_width_multiplier": 1.5,
+      "base_color": "#348CA6",
+      "highlight_color": "#79D7E4",
+      "refraction_color": "#B4F1E8",
+      "blend_mode": "SRC_OVER_PREMULTIPLIED",
+      "depth_model": "FRONT",
+      "layer_composition": [
+        {
+          "id": "outer_feather",
+          "width_multiplier": 1.55,
+          "alpha_max": 0.09,
+          "blur_sigma_dp": 1.2,
+          "color": "#348CA6"
+        },
+        {
+          "id": "translucent_body",
+          "width_multiplier": 1.0,
+          "alpha_max": 0.54,
+          "color": "#348CA6",
+          "center_luminance": 0.96,
+          "edge_luminance": 0.28
+        },
+        {
+          "id": "inner_refractive_band",
+          "width_multiplier": 0.38,
+          "offset_normal_fraction": 0.14,
+          "alpha_max": 0.38,
+          "color": "#B4F1E8"
+        },
+        {
+          "id": "specular_highlight",
+          "width_multiplier": 0.2,
+          "length_fraction": 0.11,
+          "alpha_max": 0.72,
+          "color": "#79D7E4",
+          "travels_with_head": true
+        }
+      ],
+      "cross_section": [
+        {
+          "offset": -1.0,
+          "opacity": 0.01
+        },
+        {
+          "offset": -0.58,
+          "opacity": 0.18
+        },
+        {
+          "offset": -0.25,
+          "opacity": 0.38
+        },
+        {
+          "offset": 0.0,
+          "opacity": 0.41
+        },
+        {
+          "offset": 0.3,
+          "opacity": 0.3
+        },
+        {
+          "offset": 0.72,
+          "opacity": 0.13
+        },
+        {
+          "offset": 1.0,
+          "opacity": 0.01
+        }
+      ],
+      "width_profile": [
+        {
+          "u": 0.0,
+          "width_multiplier": 0.22
+        },
+        {
+          "u": 0.14,
+          "width_multiplier": 0.52
+        },
+        {
+          "u": 0.36,
+          "width_multiplier": 0.92
+        },
+        {
+          "u": 0.6,
+          "width_multiplier": 0.86
+        },
+        {
+          "u": 0.84,
+          "width_multiplier": 0.63
+        },
+        {
+          "u": 1.0,
+          "width_multiplier": 0.4
+        }
+      ],
+      "opacity_profile": [
+        {
+          "u": 0.0,
+          "alpha_multiplier": 0.09
+        },
+        {
+          "u": 0.15,
+          "alpha_multiplier": 0.46
+        },
+        {
+          "u": 0.43,
+          "alpha_multiplier": 0.88
+        },
+        {
+          "u": 0.73,
+          "alpha_multiplier": 0.7
+        },
+        {
+          "u": 1.0,
+          "alpha_multiplier": 0.3
+        }
+      ],
+      "luminance_profile": {
+        "head": 1.42,
+        "body": 0.76,
+        "tail": 0.18
+      },
+      "specular_highlight": {
+        "shape": "moving_water_glint",
+        "head_radius_dp": [
+          0.42,
+          0.78
+        ],
+        "head_alpha": 0.78,
+        "band_length_fraction": 0.11,
+        "phase_binding": "path_arc_length_u"
+      },
+      "feather": {
+        "sigma_dp": 1.2,
+        "alpha_max": 0.09,
+        "color": "#348CA6"
+      },
+      "motion_binding": {
+        "clock": "MotionClock.opticalReferenceElapsedMs",
+        "speed_curve": "smoothstep_distance_table",
+        "phase_source": "path.phase",
+        "head_position": "ping_pong_smooth(progress)",
+        "trail_length_fraction": 0.2,
+        "path_deformation": "deterministic_sine_normal_offset",
+        "deformation_amplitude_D": 0.006
+      }
+    },
+    "warm_gold_filament": {
+      "material_id": "warm_gold_filament",
+      "material_width_multiplier": 1.0,
+      "base_color": "#D8BC87",
+      "highlight_color": "#FFE6B0",
+      "refraction_color": "#8D754B",
+      "blend_mode": "SRC_OVER_PREMULTIPLIED",
+      "depth_model": "per_path_BACK_or_FRONT",
+      "layer_composition": [
+        {
+          "id": "soft_tail",
+          "width_multiplier": 1.9,
+          "alpha_max": 0.12,
+          "blur_sigma_dp": 0.75,
+          "color": "#D8BC87"
+        },
+        {
+          "id": "fine_filament",
+          "width_multiplier": 1.0,
+          "alpha_max": 0.78,
+          "color": "#D8BC87"
+        },
+        {
+          "id": "sun_glint",
+          "width_multiplier": 0.34,
+          "length_fraction": 0.04,
+          "alpha_max": 0.92,
+          "color": "#FFE6B0",
+          "travels_with_head": true
+        }
+      ],
+      "cross_section": [
+        {
+          "offset": -1.0,
+          "opacity": 0.02
+        },
+        {
+          "offset": -0.45,
+          "opacity": 0.38
+        },
+        {
+          "offset": 0.0,
+          "opacity": 0.9
+        },
+        {
+          "offset": 0.45,
+          "opacity": 0.38
+        },
+        {
+          "offset": 1.0,
+          "opacity": 0.02
+        }
+      ],
+      "width_profile": [
+        {
+          "u": 0.0,
+          "width_multiplier": 0.34
+        },
+        {
+          "u": 0.15,
+          "width_multiplier": 0.62
+        },
+        {
+          "u": 0.43,
+          "width_multiplier": 0.48
+        },
+        {
+          "u": 0.7,
+          "width_multiplier": 0.77
+        },
+        {
+          "u": 0.91,
+          "width_multiplier": 1.0
+        },
+        {
+          "u": 1.0,
+          "width_multiplier": 0.38
+        }
+      ],
+      "opacity_profile": [
+        {
+          "u": 0.0,
+          "alpha_multiplier": 0.12
+        },
+        {
+          "u": 0.14,
+          "alpha_multiplier": 0.52
+        },
+        {
+          "u": 0.42,
+          "alpha_multiplier": 0.8
+        },
+        {
+          "u": 0.74,
+          "alpha_multiplier": 0.56
+        },
+        {
+          "u": 1.0,
+          "alpha_multiplier": 0.36
+        }
+      ],
+      "luminance_profile": {
+        "head": 1.3,
+        "body": 0.68,
+        "tail": 0.14
+      },
+      "specular_highlight": {
+        "shape": "small_irregular_glint_cluster",
+        "head_radius_dp": [
+          0.22,
+          0.44
+        ],
+        "head_alpha": 0.95,
+        "band_length_fraction": 0.045,
+        "phase_binding": "path_arc_length_u"
+      },
+      "feather": {
+        "sigma_dp": 0.75,
+        "alpha_max": 0.12,
+        "color": "#D8BC87"
+      },
+      "motion_binding": {
+        "clock": "MotionClock.opticalReferenceElapsedMs",
+        "speed_curve": "smoothstep_distance_table",
+        "phase_source": "path.phase",
+        "head_position": "ping_pong_smooth(progress)",
+        "trail_length_fraction": 0.15,
+        "path_deformation": "deterministic_sine_normal_offset",
+        "deformation_amplitude_D": 0.004
+      }
+    }
+  },
+  "path_bindings": [
+    {
+      "path_id": "G01",
+      "material_profile_id": "green_water_ribbon",
+      "centerline_ref": "assets/paths/R06_orb_filament_paths.svg#G01",
+      "path_length_D": 2.118582,
+      "depth": "BACK",
+      "period_ms": 6100,
+      "phase": 0.07,
+      "width_dp_min_max": [
+        1.5,
+        3.2
+      ],
+      "alpha_min_max": [
+        0.18,
+        0.35
+      ],
+      "motion_clock": "MotionClock.opticalReferenceElapsedMs",
+      "deformation_amplitude_D": 0.006,
+      "max_outer_radius_D": 0.675
+    },
+    {
+      "path_id": "G02",
+      "material_profile_id": "green_water_ribbon",
+      "centerline_ref": "assets/paths/R06_orb_filament_paths.svg#G02",
+      "path_length_D": 1.430731,
+      "depth": "FRONT",
+      "period_ms": 5300,
+      "phase": 0.34,
+      "width_dp_min_max": [
+        1.4,
+        2.7
+      ],
+      "alpha_min_max": [
+        0.18,
+        0.38
+      ],
+      "motion_clock": "MotionClock.opticalReferenceElapsedMs",
+      "deformation_amplitude_D": 0.006,
+      "max_outer_radius_D": 0.675
+    },
+    {
+      "path_id": "A01",
+      "material_profile_id": "warm_gold_filament",
+      "centerline_ref": "assets/paths/R06_orb_filament_paths.svg#A01",
+      "path_length_D": 1.894683,
+      "depth": "BACK",
+      "period_ms": 3700,
+      "phase": 0.59,
+      "width_dp_min_max": [
+        0.55,
+        0.92
+      ],
+      "alpha_min_max": [
+        0.45,
+        0.69
+      ],
+      "motion_clock": "MotionClock.opticalReferenceElapsedMs",
+      "deformation_amplitude_D": 0.004,
+      "max_outer_radius_D": 0.675
+    },
+    {
+      "path_id": "A02",
+      "material_profile_id": "warm_gold_filament",
+      "centerline_ref": "assets/paths/R06_orb_filament_paths.svg#A02",
+      "path_length_D": 1.539713,
+      "depth": "FRONT",
+      "period_ms": 2900,
+      "phase": 0.81,
+      "width_dp_min_max": [
+        0.55,
+        1
+      ],
+      "alpha_min_max": [
+        0.45,
+        0.72
+      ],
+      "motion_clock": "MotionClock.opticalReferenceElapsedMs",
+      "deformation_amplitude_D": 0.004,
+      "max_outer_radius_D": 0.675
+    },
+    {
+      "path_id": "C01",
+      "material_profile_id": "cyan_water_ribbon",
+      "centerline_ref": "assets/paths/R06_orb_filament_paths.svg#C01",
+      "path_length_D": 1.49934,
+      "depth": "FRONT",
+      "period_ms": 4400,
+      "phase": 0.23,
+      "width_dp_min_max": [
+        1.4,
+        2.8
+      ],
+      "alpha_min_max": [
+        0.18,
+        0.4
+      ],
+      "motion_clock": "MotionClock.opticalReferenceElapsedMs",
+      "deformation_amplitude_D": 0.006,
+      "max_outer_radius_D": 0.675
+    }
+  ],
+  "motion_sampling": {
+    "clock": "MotionClock.opticalReferenceElapsedMs",
+    "sample_times_ms": [
+      0,
+      900,
+      1800,
+      2700
+    ],
+    "phase_formula": "p = fract(phase + elapsed_ms/period_ms)",
+    "head_distance": "0.5 - 0.5*cos(2*pi*p)",
+    "direction": "sign(sin(2*pi*p))",
+    "trail_tail_fraction": {
+      "green": 0.23,
+      "cyan": 0.2,
+      "gold": 0.15
+    },
+    "deterministic_curve_deformation": true,
+    "random_per_frame": false
+  }
+}

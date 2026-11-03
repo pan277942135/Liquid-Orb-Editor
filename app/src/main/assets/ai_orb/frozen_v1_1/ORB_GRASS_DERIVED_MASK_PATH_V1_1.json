@@ -1,0 +1,718 @@
+{
+  "schemaVersion": "1.1.0",
+  "contractId": "YUJIAN_AI_ORB_GRASS_MASK_PATH_V1_1",
+  "status": "FROZEN_FOR_WORK",
+  "source": {
+    "file": "透明湖水玻璃球.png",
+    "dimensions": [
+      1254,
+      1254
+    ],
+    "sha256": "2773e4628ff6132605314693742488542c3e70fd04b581d8825dd13cea0067ee",
+    "policy": "READ_ONLY"
+  },
+  "method": "manually traced fixed-source ROI polygons, feathered 11px and gated by HSV green-material confidence; no generated leaves",
+  "maskPipeline": {
+    "polygonRaster": "cv2.fillPoly",
+    "featherSigmaPxAt1254": 11.0,
+    "hueOpenCV8Bit": {
+      "lower": 30,
+      "lowerRamp": 13,
+      "upper": 91,
+      "upperRamp": 16
+    },
+    "saturationRamp": {
+      "start": 30,
+      "fullAt": 120
+    },
+    "valueRamp": {
+      "start": 18,
+      "fullAt": 108
+    },
+    "confidenceFormula": "clamp((H-30)/13,0,1)*clamp((91-H)/16,0,1)*clamp((S-30)/90,0,1)*clamp((V-18)/90,0,1)*(sourceAlpha/255)",
+    "finalMaskFormula": "gaussianFeather(polygon, sigma=11px) * (0.15+0.85*confidence) * 255",
+    "colorSpace": "OpenCV HSV, hue 0..179, saturation/value 0..255"
+  },
+  "coordinates": {
+    "space": "sourceUV",
+    "origin": "upper_left",
+    "xRight": true,
+    "yDown": true,
+    "normalize": [
+      "x/1254",
+      "y/1254"
+    ],
+    "noAssumptionAboutRuntimeWebPCrop": true
+  },
+  "runtimeSample": {
+    "algorithm": "single-original-core-draw with per-pixel grass-gated displacement; do not duplicate the already baked leaf pixels",
+    "texelFormula": "mix(sampleOriginal(uv), sampleOriginal(uv - localDisplacementUV(uv, t)), maskAlpha(uv))",
+    "rootConstraint": "zero displacement at root; tip peak at 100% root-to-tip arc-length",
+    "feather": "existing feathered alpha mask; preserve lens/caustics border and upper-left sunlight",
+    "amplitudeUnits": "fraction of visible core diameter D",
+    "phase": "sin(2*pi*sceneElapsedMs/periodMs + radians(phaseDeg))",
+    "tipDirection": "normal to existing traced leaf centerline, not global rigid rotation",
+    "envelope": "smoothstep(0.10,1.0,arcLengthFraction)^1.6",
+    "noExtraSurface": "do not create a new GLSurfaceView or independent EGL host",
+    "android16Preferred": "RenderEffect/RuntimeShader or equivalent shader pathway integrated with existing core renderer; keep original source bitmap immutable",
+    "fallback": "If hardware/shader path is unavailable, retain original core and animate source-matched sunlight/caustics response; do not draw displaced duplicate leaves",
+    "doNotClaimUnsupportedRendererValidated": true
+  },
+  "leaves": {
+    "BACK_B1": {
+      "description": "Right upper green translucent aquatic ribbon, traced from the original image",
+      "polygonPx": [
+        [
+          760,
+          310
+        ],
+        [
+          840,
+          336
+        ],
+        [
+          904,
+          413
+        ],
+        [
+          935,
+          517
+        ],
+        [
+          919,
+          601
+        ],
+        [
+          869,
+          661
+        ],
+        [
+          830,
+          599
+        ],
+        [
+          847,
+          508
+        ],
+        [
+          795,
+          423
+        ],
+        [
+          710,
+          348
+        ]
+      ],
+      "rootPx": [
+        865,
+        661
+      ],
+      "tipPx": [
+        755,
+        326
+      ],
+      "curvePx": [
+        [
+          865,
+          661
+        ],
+        [
+          904,
+          550
+        ],
+        [
+          836,
+          372
+        ],
+        [
+          755,
+          326
+        ]
+      ],
+      "depth": "BACK",
+      "periodMs": 6200,
+      "phaseDeg": 0,
+      "amplitudeD": 0.018,
+      "rootMaxD": 0.0,
+      "maskFile": "orb_grass_back_b1_mask_v1_1.png",
+      "maskNonzeroPx": 57633,
+      "maskMaxAlpha": 253,
+      "rootUV": [
+        0.689793,
+        0.527113
+      ],
+      "tipUV": [
+        0.602073,
+        0.259968
+      ],
+      "curveUV": [
+        [
+          0.689793,
+          0.527113
+        ],
+        [
+          0.720893,
+          0.438596
+        ],
+        [
+          0.666667,
+          0.296651
+        ],
+        [
+          0.602073,
+          0.259968
+        ]
+      ],
+      "polygonUV": [
+        [
+          0.606061,
+          0.247209
+        ],
+        [
+          0.669856,
+          0.267943
+        ],
+        [
+          0.720893,
+          0.329346
+        ],
+        [
+          0.745614,
+          0.412281
+        ],
+        [
+          0.732855,
+          0.479266
+        ],
+        [
+          0.692982,
+          0.527113
+        ],
+        [
+          0.661882,
+          0.477671
+        ],
+        [
+          0.675439,
+          0.405104
+        ],
+        [
+          0.633971,
+          0.337321
+        ],
+        [
+          0.566188,
+          0.277512
+        ]
+      ],
+      "derivedFrom": "ASSET_01_CORE_MASTER",
+      "pathType": "cubicBezierCenterline",
+      "placement": "inside source-derived RGB/A geometry; source pixels remain immutable"
+    },
+    "BACK_B2": {
+      "description": "Right lower green translucent aquatic ribbon, traced from the original image",
+      "polygonPx": [
+        [
+          890,
+          459
+        ],
+        [
+          950,
+          512
+        ],
+        [
+          976,
+          633
+        ],
+        [
+          962,
+          725
+        ],
+        [
+          928,
+          822
+        ],
+        [
+          889,
+          889
+        ],
+        [
+          811,
+          955
+        ],
+        [
+          830,
+          825
+        ],
+        [
+          869,
+          720
+        ],
+        [
+          856,
+          613
+        ]
+      ],
+      "rootPx": [
+        816,
+        950
+      ],
+      "tipPx": [
+        937,
+        482
+      ],
+      "curvePx": [
+        [
+          816,
+          950
+        ],
+        [
+          936,
+          797
+        ],
+        [
+          962,
+          616
+        ],
+        [
+          937,
+          482
+        ]
+      ],
+      "depth": "BACK",
+      "periodMs": 6200,
+      "phaseDeg": 100,
+      "amplitudeD": 0.018,
+      "rootMaxD": 0.0,
+      "maskFile": "orb_grass_back_b2_mask_v1_1.png",
+      "maskNonzeroPx": 71726,
+      "maskMaxAlpha": 253,
+      "rootUV": [
+        0.650718,
+        0.757576
+      ],
+      "tipUV": [
+        0.747209,
+        0.38437
+      ],
+      "curveUV": [
+        [
+          0.650718,
+          0.757576
+        ],
+        [
+          0.746411,
+          0.635566
+        ],
+        [
+          0.767145,
+          0.491228
+        ],
+        [
+          0.747209,
+          0.38437
+        ]
+      ],
+      "polygonUV": [
+        [
+          0.709729,
+          0.366029
+        ],
+        [
+          0.757576,
+          0.408293
+        ],
+        [
+          0.778309,
+          0.504785
+        ],
+        [
+          0.767145,
+          0.57815
+        ],
+        [
+          0.740032,
+          0.655502
+        ],
+        [
+          0.708931,
+          0.708931
+        ],
+        [
+          0.64673,
+          0.761563
+        ],
+        [
+          0.661882,
+          0.657895
+        ],
+        [
+          0.692982,
+          0.574163
+        ],
+        [
+          0.682616,
+          0.488836
+        ]
+      ],
+      "derivedFrom": "ASSET_01_CORE_MASTER",
+      "pathType": "cubicBezierCenterline",
+      "placement": "inside source-derived RGB/A geometry; source pixels remain immutable"
+    },
+    "FRONT_F1": {
+      "description": "Left upper green leaf/ribbon embedded in the master sphere",
+      "polygonPx": [
+        [
+          182,
+          464
+        ],
+        [
+          260,
+          502
+        ],
+        [
+          321,
+          583
+        ],
+        [
+          357,
+          692
+        ],
+        [
+          401,
+          765
+        ],
+        [
+          460,
+          837
+        ],
+        [
+          509,
+          911
+        ],
+        [
+          507,
+          964
+        ],
+        [
+          415,
+          895
+        ],
+        [
+          335,
+          817
+        ],
+        [
+          270,
+          736
+        ],
+        [
+          208,
+          641
+        ],
+        [
+          162,
+          555
+        ]
+      ],
+      "rootPx": [
+        504,
+        940
+      ],
+      "tipPx": [
+        206,
+        497
+      ],
+      "curvePx": [
+        [
+          504,
+          940
+        ],
+        [
+          351,
+          800
+        ],
+        [
+          232,
+          658
+        ],
+        [
+          206,
+          497
+        ]
+      ],
+      "depth": "FRONT",
+      "periodMs": 4800,
+      "phaseDeg": 120,
+      "amplitudeD": 0.03,
+      "rootMaxD": 0.003,
+      "maskFile": "orb_grass_front_f1_mask_v1_1.png",
+      "maskNonzeroPx": 87132,
+      "maskMaxAlpha": 253,
+      "rootUV": [
+        0.401914,
+        0.749601
+      ],
+      "tipUV": [
+        0.164274,
+        0.396332
+      ],
+      "curveUV": [
+        [
+          0.401914,
+          0.749601
+        ],
+        [
+          0.279904,
+          0.637959
+        ],
+        [
+          0.185008,
+          0.524721
+        ],
+        [
+          0.164274,
+          0.396332
+        ]
+      ],
+      "polygonUV": [
+        [
+          0.145136,
+          0.370016
+        ],
+        [
+          0.207337,
+          0.400319
+        ],
+        [
+          0.255981,
+          0.464912
+        ],
+        [
+          0.284689,
+          0.551834
+        ],
+        [
+          0.319777,
+          0.610048
+        ],
+        [
+          0.366826,
+          0.667464
+        ],
+        [
+          0.405901,
+          0.726475
+        ],
+        [
+          0.404306,
+          0.76874
+        ],
+        [
+          0.330941,
+          0.713716
+        ],
+        [
+          0.267145,
+          0.651515
+        ],
+        [
+          0.215311,
+          0.586922
+        ],
+        [
+          0.165869,
+          0.511164
+        ],
+        [
+          0.129187,
+          0.442584
+        ]
+      ],
+      "derivedFrom": "ASSET_01_CORE_MASTER",
+      "pathType": "cubicBezierCenterline",
+      "placement": "inside source-derived RGB/A geometry; source pixels remain immutable"
+    },
+    "FRONT_F2": {
+      "description": "Left lower green leaf/ribbon embedded in the master sphere",
+      "polygonPx": [
+        [
+          237,
+          686
+        ],
+        [
+          321,
+          742
+        ],
+        [
+          401,
+          793
+        ],
+        [
+          468,
+          844
+        ],
+        [
+          550,
+          908
+        ],
+        [
+          627,
+          976
+        ],
+        [
+          544,
+          984
+        ],
+        [
+          470,
+          943
+        ],
+        [
+          376,
+          879
+        ],
+        [
+          307,
+          829
+        ],
+        [
+          242,
+          759
+        ]
+      ],
+      "rootPx": [
+        616,
+        973
+      ],
+      "tipPx": [
+        262,
+        719
+      ],
+      "curvePx": [
+        [
+          616,
+          973
+        ],
+        [
+          480,
+          922
+        ],
+        [
+          345,
+          814
+        ],
+        [
+          262,
+          719
+        ]
+      ],
+      "depth": "FRONT",
+      "periodMs": 4800,
+      "phaseDeg": 240,
+      "amplitudeD": 0.027,
+      "rootMaxD": 0.003,
+      "maskFile": "orb_grass_front_f2_mask_v1_1.png",
+      "maskNonzeroPx": 61943,
+      "maskMaxAlpha": 253,
+      "rootUV": [
+        0.491228,
+        0.775917
+      ],
+      "tipUV": [
+        0.208931,
+        0.573365
+      ],
+      "curveUV": [
+        [
+          0.491228,
+          0.775917
+        ],
+        [
+          0.382775,
+          0.735247
+        ],
+        [
+          0.27512,
+          0.649123
+        ],
+        [
+          0.208931,
+          0.573365
+        ]
+      ],
+      "polygonUV": [
+        [
+          0.188995,
+          0.547049
+        ],
+        [
+          0.255981,
+          0.591707
+        ],
+        [
+          0.319777,
+          0.632376
+        ],
+        [
+          0.373206,
+          0.673046
+        ],
+        [
+          0.438596,
+          0.724083
+        ],
+        [
+          0.5,
+          0.778309
+        ],
+        [
+          0.433812,
+          0.784689
+        ],
+        [
+          0.374801,
+          0.751994
+        ],
+        [
+          0.299841,
+          0.700957
+        ],
+        [
+          0.244817,
+          0.661085
+        ],
+        [
+          0.192982,
+          0.605263
+        ]
+      ],
+      "derivedFrom": "ASSET_01_CORE_MASTER",
+      "pathType": "cubicBezierCenterline",
+      "placement": "inside source-derived RGB/A geometry; source pixels remain immutable"
+    }
+  },
+  "groups": {
+    "BACK": {
+      "maskFile": "orb_grass_back_combined_mask_v1_1.png",
+      "periodMs": 6200,
+      "depth": "behind front caustics / glass front reflection",
+      "motion": "local optical bend only"
+    },
+    "FRONT": {
+      "maskFile": "orb_grass_front_combined_mask_v1_1.png",
+      "periodMs": 4800,
+      "depth": "inside glass before front filaments",
+      "motion": "local optical bend only"
+    }
+  },
+  "acceptance": {
+    "maxMaskOutsideSourceAlphaPx": 0,
+    "masterShaUnchanged": true,
+    "maxVisibleTipDisplacementD": 0.03,
+    "maxRootDisplacementD": 0.003,
+    "noLeafDuplication": true,
+    "noRevokedSvg": true,
+    "previewIsTechnicalMaskNotArtistVisual": true
+  }
+}

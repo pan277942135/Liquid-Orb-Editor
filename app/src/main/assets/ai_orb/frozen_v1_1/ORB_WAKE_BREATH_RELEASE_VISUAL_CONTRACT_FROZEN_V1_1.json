@@ -1,0 +1,971 @@
+{
+  "schemaVersion": "1.1.0",
+  "contractId": "YUJIAN_AI_ORB_WAKE_BREATH_RELEASE_VISUAL_PROFILE_V1_1",
+  "title": "YuJian AI Orb S1 Wake / S2 Breath / S2 Local Filament Release and Return — Approved Grass Option B",
+  "status": "FROZEN_FOR_WORK",
+  "scope": {
+    "included": [
+      "S1_IDLE",
+      "ORB_WAKE_TRANSITION",
+      "S2_ACTIVE_BREATH",
+      "S2_ACTIVE_RELEASE_RETURN"
+    ],
+    "excluded": [
+      "photo_perimeter_waterlight",
+      "path_to_fish",
+      "fish_mask",
+      "fish_gold",
+      "orb_return_from_fish",
+      "glyph_deconstruction",
+      "species_name_reveal",
+      "S3_GLYPH"
+    ]
+  },
+  "sourceAuthority": {
+    "visualAuthority": "The three user-supplied images in this conversation. Do not regenerate or replace their visual master.",
+    "asset01": "Immutable transparent Orb core master; exact binary reuse.",
+    "asset02": "Frozen S2 composition reference only; RGB with dark background, not a transparent runtime sprite.",
+    "asset03": "L01-L07 layer, three-state and motion-parameter reference board; annotation derivatives are allowed, source remains unchanged.",
+    "implementationAuthority": "Existing detailed R02-R06 runtime candidate profiles and R06 Bezier geometry are reused where available. Candidate status must remain visible until product visual approval.",
+    "stateRule": "Only S1_IDLE / S2_ACTIVE / S3_GLYPH are Orb life states. WAKE is S1→S2 transition; BREATH and RELEASE/RETURN are behaviors/events inside S2_ACTIVE.",
+    "newGrassApproval": "Approved scheme B: derived masks/paths from frozen master only, no replacement core, no revoked R01 SVGs."
+  },
+  "assets": [
+    {
+      "id": "ASSET_01_CORE_MASTER",
+      "file": "透明湖水玻璃球.png",
+      "format": "PNG",
+      "sizePx": [
+        1254,
+        1254
+      ],
+      "colorMode": "RGBA",
+      "sha256": "2773e4628ff6132605314693742488542c3e70fd04b581d8825dd13cea0067ee",
+      "alphaBoundsPx": [
+        128,
+        123,
+        1126,
+        1119
+      ],
+      "usage": "S1 and S2 identical core image",
+      "policy": "FROZEN_READ_ONLY"
+    },
+    {
+      "id": "ASSET_01_RUNTIME_DERIVATIVE",
+      "file": "processing_water_core_v1.webp",
+      "format": "WebP",
+      "sizePx": [
+        384,
+        384
+      ],
+      "sha256": "daa85a1fc13fac4a7ca562959c2d19172ee0f1e94277c3eeb32ef1f09a1a7b09",
+      "gitBlobSha": "a70a71c623d15355cecda5b0e834d9b0b871e568",
+      "usage": "Existing Android Runtime core image",
+      "policy": "FROZEN_READ_ONLY"
+    },
+    {
+      "id": "ASSET_02_S2_REFERENCE",
+      "file": "翡翠星光中的流光水晶球.png",
+      "format": "PNG",
+      "sizePx": [
+        1254,
+        1254
+      ],
+      "colorMode": "RGB",
+      "sha256": "910d15313b39ee2afa277356c46290e2cb7739b80a60e9ab4efaa14a29d74122",
+      "usage": "S2 visual composition and material reference",
+      "policy": "REFERENCE_ONLY_NOT_RUNTIME_OVERLAY",
+      "reason": "Opaque dark background; not an isolated transparent layer."
+    },
+    {
+      "id": "ASSET_03_SPEC_BOARD",
+      "file": "AI Orb三态视觉规范板.png",
+      "format": "PNG",
+      "sizePx": [
+        1536,
+        1024
+      ],
+      "colorMode": "RGB",
+      "sha256": "5245ccd5622e6006f8d3a41edbcd6833654a2a838bd191946e9388429567a034",
+      "usage": "L01-L07 exploded layers, S1/S2/S3 flow, motion parameters",
+      "policy": "DESIGN_REFERENCE_ONLY"
+    },
+    {
+      "id": "R01B_DERIVED_GRASS_MASK_PATH",
+      "file": "ORB_GRASS_DERIVED_MASK_PATH_V1_1.json",
+      "format": "JSON",
+      "usage": "four traceable source-green region paths with root/tip/period/phase and normalized source UV",
+      "policy": "FROZEN_DERIVED_EDITABLE_RESOURCE",
+      "sha256": "f16a55c960b39f499fa8e3283fbe56dc3d53b0671f65e7f183caf7ecafbd313b"
+    },
+    {
+      "id": "R01B_DERIVED_GRASS_PATHS_SVG",
+      "file": "ORB_GRASS_DERIVED_PATHS_V1_1.svg",
+      "format": "SVG",
+      "usage": "technical paths only, no botanical art and not revoked R01 SVGs",
+      "policy": "FROZEN_DERIVED_EDITABLE_RESOURCE",
+      "sha256": "f0cfadf977b10fa122f61bfbc55a8d0368dd859dd94173468d5a9dae36178440"
+    },
+    {
+      "id": "R01B_DERIVED_GRASS_FRONT_MASK",
+      "file": "orb_grass_front_combined_mask_v1_1.png",
+      "format": "PNG grayscale L 1254x1254",
+      "usage": "front grass refraction displacement weight, not standalone visual layer",
+      "policy": "FROZEN_DERIVED_MASK",
+      "sha256": "1c46d4a1f6c045c17dc1f48e3c5889a22a4fb581e216874963904094b6d8551d"
+    },
+    {
+      "id": "R01B_DERIVED_GRASS_BACK_MASK",
+      "file": "orb_grass_back_combined_mask_v1_1.png",
+      "format": "PNG grayscale L 1254x1254",
+      "usage": "back grass refraction displacement weight, not standalone visual layer",
+      "policy": "FROZEN_DERIVED_MASK",
+      "sha256": "38921cbe9ee5de3b3d0964366af05a334ce1beb13fd035cc4fe13629a3560142"
+    }
+  ],
+  "coordinateSystem": {
+    "space": "OrbLocal",
+    "sphereDiameterD": 1.0,
+    "origin": [
+      0.0,
+      0.0
+    ],
+    "xPositive": "right",
+    "yPositive": "down",
+    "uvMapping": {
+      "u": "0=left, 1=right",
+      "v": "0=top, 1=bottom",
+      "toOrbLocal": [
+        "x=(u-0.5)*D",
+        "y=(v-0.5)*D"
+      ]
+    },
+    "dpRule": "Convert dp using the actual runtime Orb diameter. Never copy source PNG pixel coordinates directly into Android dp.",
+    "sourceMasterPixels": [
+      1254,
+      1254
+    ],
+    "sourceToRuntimeAlignment": "Work must verify actual 384x384 WebP crop / contentRect alignment against 1254x1254 master. Path UV is source-wide, not arbitrary core sphere bounding box."
+  },
+  "states": {
+    "S1_IDLE": {
+      "role": "quiet, stable waiting state",
+      "core": "same immutable Asset01",
+      "filaments": {
+        "visible": false,
+        "movingHead": false,
+        "extraGlow": false
+      },
+      "droplets": {
+        "visibleCount": "1-3 subtle",
+        "speedDpPerSec": [
+          0.0,
+          0.2
+        ]
+      },
+      "grassAmplitudeD": 0.005,
+      "sphereBreath": {
+        "amplitude": 0.008,
+        "periodMs": 6000
+      },
+      "duration": "continuous"
+    },
+    "S2_ACTIVE": {
+      "role": "single active state; release and return occur inside this state",
+      "core": "same immutable Asset01; no shape change between S1 and S2",
+      "filaments": {
+        "visible": true,
+        "count": 5,
+        "independentMotion": true,
+        "headAndTail": true
+      },
+      "droplets": {
+        "visibleCount": 3,
+        "speedDpPerSec": [
+          0.2,
+          0.8
+        ]
+      },
+      "grassAmplitudeDReference": [
+        0.018,
+        0.03
+      ],
+      "sphereBreath": {
+        "amplitude": 0.018,
+        "periodMs": 4800
+      },
+      "duration": "continuous"
+    },
+    "S3_GLYPH": {
+      "role": "existing later glyph state",
+      "includedInThisContract": false
+    }
+  },
+  "layers": [
+    {
+      "id": "L01",
+      "name": "Environmental Halo",
+      "zh": "环境光晕",
+      "depth": "BACKMOST",
+      "source": "procedural",
+      "renderOrder": 1,
+      "s1AlphaMax": 0.0,
+      "s2AlphaMax": 0.08,
+      "color": "#0B7775",
+      "blend": "SCREEN",
+      "rule": "soft atmosphere only; no hard ring; within global 14dp envelope"
+    },
+    {
+      "id": "L02",
+      "name": "Water Droplets",
+      "zh": "水滴粒子",
+      "depth": "INTERNAL_FRONT_CLIPPED",
+      "source": "existing WaterDropletRenderer geometry + R02 deterministic Orb profile",
+      "renderOrder": 6,
+      "clip": "actual core alpha ∩ internal water mask",
+      "rule": "three fixed droplets; no random spawn; no white dots; no PNG stickers"
+    },
+    {
+      "id": "L03",
+      "name": "External Filaments",
+      "zh": "外部光丝",
+      "depth": "BACK_AND_FRONT",
+      "source": "existing five R06 Bezier paths",
+      "renderOrder": "split BACK/FRONT",
+      "rule": "G01/A01 behind core; G02/A02/C01 in front; same five paths for RELEASE and RETURN",
+      "firstPassVisibilityGain": 1.28,
+      "absoluteAlphaCap": 0.82
+    },
+    {
+      "id": "L04",
+      "name": "Internal Water Body",
+      "zh": "内部水体",
+      "depth": "INTERNAL_CLIPPED",
+      "source": "Asset01 base + existing WaterCausticsField via OrbCausticsAdapter",
+      "renderOrder": 4,
+      "innerRadiusD": 0.385,
+      "edgeFadeD": 0.035,
+      "rule": "reuse existing caustics algorithm; no rectangular field or black backing"
+    },
+    {
+      "id": "L05",
+      "name": "Aquatic Grass",
+      "zh": "水草生命",
+      "depth": "INTERNAL_LAYER",
+      "source": "existing green watergrass/ribbon baked into Asset01, plus newly approved source-derived four masks and centerline paths",
+      "renderOrder": 5,
+      "lightResponseAlphaMax": 0.1,
+      "dynamicLeafMotionEnabled": true,
+      "rule": "scheme B: local source-sampled optical displacement only; root stable, tip moves; DO NOT draw duplicated leaf overlays, invent new botanical plants or integrate revoked R01 SVGs",
+      "tipSpecularAlphaMax": 0.12
+    },
+    {
+      "id": "L06",
+      "name": "Glass Shell",
+      "zh": "玻璃外壳",
+      "depth": "CORE",
+      "source": "Asset01 / processing_water_core_v1.webp",
+      "renderOrder": 2,
+      "alpha": "source alpha unchanged",
+      "rule": "same core binary in S1/S2; no redraw, recolor, duplicate shell or non-uniform scale"
+    },
+    {
+      "id": "L07",
+      "name": "Sunlight Highlight",
+      "zh": "阳光高光",
+      "depth": "INTERNAL_RESPONSE_AND_FINAL_SPECULAR",
+      "source": "baked upper-left sunlight + R03 profile overlay",
+      "renderOrder": "split",
+      "sourceUV": [
+        0.24,
+        0.2
+      ],
+      "direction": "upper-left to lower-right",
+      "color": "#D8BC87",
+      "rule": "fixed azimuth; no whole-Orb brightness pulse; do not duplicate baked sun flare"
+    }
+  ],
+  "dropletProfile": {
+    "sourceProfile": {
+      "file": "R02_orb_droplet_profile.json",
+      "sha256": "429ead6c845aed5e508758d67e71a88a0cf73c6fd83ae2eea0b0acdc68fd2cd6",
+      "status": "EXISTING_CANDIDATE"
+    },
+    "droplets": [
+      {
+        "id": "D1",
+        "uv": [
+          0.32,
+          0.36
+        ],
+        "diameterDpAt80": 1.8,
+        "bodyAlpha": 0.23,
+        "rimAlpha": 0.38,
+        "periodMs": 5200,
+        "phase": 0.12
+      },
+      {
+        "id": "D2",
+        "uv": [
+          0.68,
+          0.56
+        ],
+        "diameterDpAt80": 2.2,
+        "bodyAlpha": 0.26,
+        "rimAlpha": 0.44,
+        "periodMs": 6100,
+        "phase": 0.49
+      },
+      {
+        "id": "D3",
+        "uv": [
+          0.49,
+          0.73
+        ],
+        "diameterDpAt80": 1.4,
+        "bodyAlpha": 0.19,
+        "rimAlpha": 0.34,
+        "periodMs": 4800,
+        "phase": 0.83
+      }
+    ],
+    "speedDpPerSec": [
+      0.2,
+      0.8
+    ],
+    "maxHorizontalDriftD": 0.007,
+    "maxVerticalDriftD": 0.012,
+    "scaleVariation": 0.05,
+    "specularColor": "#FFF4D7",
+    "specularAlphaMax": 0.32,
+    "clip": "actual internal water mask",
+    "size68dpScale": 0.85
+  },
+  "grassProfile": {
+    "status": "APPROVED_SCHEME_B_FROZEN_FOR_WORK",
+    "sourceProfile": {
+      "file": "R01_aquatic_grass_profile.json",
+      "sha256": "5448716858308319db9b33a8237e869f33f03d042773f483a3b3337155e5d7b0",
+      "status": "LEGACY_CANDIDATE_NOT_DIRECT_IMPORT"
+    },
+    "newDerivation": {
+      "id": "YUJIAN_AI_ORB_GRASS_MASK_PATH_V1_1",
+      "definitionFile": "ORB_GRASS_DERIVED_MASK_PATH_V1_1.json",
+      "svgPathFile": "ORB_GRASS_DERIVED_PATHS_V1_1.svg",
+      "maskFiles": [
+        "orb_grass_back_b1_mask_v1_1.png",
+        "orb_grass_back_b2_mask_v1_1.png",
+        "orb_grass_front_f1_mask_v1_1.png",
+        "orb_grass_front_f2_mask_v1_1.png"
+      ],
+      "combinedMasks": [
+        "orb_grass_back_combined_mask_v1_1.png",
+        "orb_grass_front_combined_mask_v1_1.png"
+      ],
+      "diagnosticAlignmentPreview": "ORB_GRASS_MASK_PATH_ALIGNMENT_PREVIEW_V1_1.png",
+      "note": "Masks are source-derived technical controls (not finished artwork). They select four visible green, watergrass-like bands in the immutable master. Each single-source pixel is optically sampled/displaced without duplicating leaves."
+    },
+    "backGroup": {
+      "leafIDs": [
+        "BACK_B1",
+        "BACK_B2"
+      ],
+      "periodMs": 6200,
+      "tipAmplitudeD": 0.018,
+      "rootMovementD": 0.0,
+      "phaseDeg": [
+        0,
+        100
+      ]
+    },
+    "frontGroup": {
+      "leafIDs": [
+        "FRONT_F1",
+        "FRONT_F2"
+      ],
+      "periodMs": 4800,
+      "tipAmplitudeD": [
+        0.03,
+        0.027
+      ],
+      "rootMovementMaxD": 0.003,
+      "phaseDeg": [
+        120,
+        240
+      ]
+    },
+    "motion": {
+      "time": "RecognitionSceneFrame.sceneElapsedMs",
+      "phase": "sin(2π*t/T+phaseDeg)",
+      "tipEnvelope": "smoothstep(0.10,1.0,s)^1.6",
+      "displacementDirection": "normal to existing Bezier leaf centerline",
+      "pixelSampler": "mix(sampleOriginal(uv),sampleOriginal(uv-displacement),maskAlpha)",
+      "doNotDuplicateBakedGrass": true,
+      "noSecondSurface": true,
+      "pause": "freeze the same shared scene clock",
+      "onNextStage": "do not reset phase"
+    },
+    "reflectance": {
+      "sunlightDirection": "upper-left",
+      "color": "#A9D9C5",
+      "diffuseAlphaMax": 0.1,
+      "tipGlintAlphaMax": 0.12,
+      "clipToDerivedMask": true
+    },
+    "doNotUseRevokedSvg": true,
+    "revokedAssets": [
+      {
+        "file": "R01_grass_back.svg",
+        "status": "REVOKED_DO_NOT_INTEGRATE",
+        "sha256": "9129adb9cfd4ea4d328330367dfcd3845ff650a55af1a4d81c513bd84ca67a80"
+      },
+      {
+        "file": "R01_grass_front.svg",
+        "status": "REVOKED_DO_NOT_INTEGRATE",
+        "sha256": "3b2d0d55985659fd5c0d49e21fe69a1d47327f38182adb9a3fc5a8a8ef8a16a7"
+      }
+    ]
+  },
+  "sunlightProfile": {
+    "sourceProfile": {
+      "file": "R03_orb_sunlight_profile.json",
+      "sha256": "180d5d8910cc36ccb212179c9d8227ecacda4066274a6ba82a2872bf7310dff3",
+      "status": "EXISTING_CANDIDATE"
+    },
+    "sourceUV": [
+      0.24,
+      0.2
+    ],
+    "direction": "upper-left to lower-right",
+    "azimuthFixed": true,
+    "mainColor": "#D8BC87",
+    "glassSpecularAlphaMax": 0.11,
+    "coreRefractionAlphaMax": 0.11,
+    "causticResponseAlphaMax": 0.14,
+    "grassResponseAlphaMax": 0.06,
+    "dropletSpecularAlphaMax": 0.32,
+    "maxGlassHighlightDisplacementD": 0.02,
+    "totalAdditionalAdditiveAlphaMax": 0.22,
+    "glassSpecularPeriodMs": 6400,
+    "coreRefractionPeriodMs": 5200
+  },
+  "causticsProfile": {
+    "sourceProfile": {
+      "file": "R05_orb_caustics_profile.json",
+      "sha256": "e393460a2659efd26bc1708768ff3020561c44c35920702b7c70ec95f3f622fb",
+      "status": "EXISTING_CANDIDATE"
+    },
+    "algorithm": "reuse WaterCausticsField.field() and sampleCaustic()",
+    "deepFlow": {
+      "periodMs": 6500,
+      "frequency": 1.65,
+      "alphaMax": 0.07,
+      "advectionDPerSec": [
+        0.015,
+        0.004
+      ]
+    },
+    "surfaceCaustic": {
+      "periodMs": 4100,
+      "frequency": 3.05,
+      "alphaMax": 0.12,
+      "advectionDPerSec": [
+        -0.006,
+        0.011
+      ]
+    },
+    "mask": {
+      "innerRadiusD": 0.385,
+      "edgeFadeD": 0.035
+    },
+    "normal": {
+      "texturePx": [
+        96,
+        96
+      ],
+      "minRefreshMs": 66,
+      "buffers": 2
+    },
+    "low": {
+      "texturePx": [
+        64,
+        64
+      ],
+      "minRefreshMs": 120,
+      "buffers": 2
+    },
+    "noPerFrameBitmapAllocation": true
+  },
+  "filamentProfile": {
+    "sourceProfile": {
+      "file": "R06_orb_filament_profile.json",
+      "sha256": "075e8390aa08638ba3baca5a12f9b92b73718dc87ec1175fe3325e4cc7cad864",
+      "status": "EXISTING_CANDIDATE"
+    },
+    "geometry": {
+      "file": "R06_orb_filament_path_geometry.json",
+      "sha256": "a37d947d32cdf6902cabe87be03458ab6d0dd236c4d033564a98f8a5a1a601a5",
+      "status": "VISUAL_REVIEW_PENDING"
+    },
+    "svg": {
+      "file": "R06_orb_filament_paths.svg",
+      "sha256": "66966e0b9aaf1fe6cbb3930ae99d382a1d3a9d292ef8c3911a9e2ef45c4db52b",
+      "status": "VISUAL_REVIEW_PENDING"
+    },
+    "coordinateSystem": {
+      "center": [
+        0.0,
+        0.0
+      ],
+      "sphereDiameterD": 1.0,
+      "xPositive": "right",
+      "yPositive": "down"
+    },
+    "paths": [
+      {
+        "id": "G01",
+        "material": "GREEN_RIBBON",
+        "depth": "BACK",
+        "periodMs": 6100,
+        "phase": 0.07,
+        "widthDp": [
+          1.5,
+          3.2
+        ],
+        "alpha": [
+          0.18,
+          0.35
+        ],
+        "maxExtensionDp": 13.1
+      },
+      {
+        "id": "G02",
+        "material": "GREEN_RIBBON",
+        "depth": "FRONT",
+        "periodMs": 5300,
+        "phase": 0.34,
+        "widthDp": [
+          1.4,
+          2.7
+        ],
+        "alpha": [
+          0.18,
+          0.38
+        ],
+        "maxExtensionDp": 13.83
+      },
+      {
+        "id": "A01",
+        "material": "WARM_GOLD_FILAMENT",
+        "depth": "BACK",
+        "periodMs": 3700,
+        "phase": 0.59,
+        "widthDp": [
+          0.55,
+          0.92
+        ],
+        "alpha": [
+          0.45,
+          0.69
+        ],
+        "maxExtensionDp": 12.54
+      },
+      {
+        "id": "A02",
+        "material": "WARM_GOLD_FILAMENT",
+        "depth": "FRONT",
+        "periodMs": 2900,
+        "phase": 0.81,
+        "widthDp": [
+          0.55,
+          1.0
+        ],
+        "alpha": [
+          0.45,
+          0.72
+        ],
+        "maxExtensionDp": 9.31
+      },
+      {
+        "id": "C01",
+        "material": "CYAN_WATER_RIBBON",
+        "depth": "FRONT",
+        "periodMs": 4400,
+        "phase": 0.23,
+        "widthDp": [
+          1.4,
+          2.8
+        ],
+        "alpha": [
+          0.18,
+          0.4
+        ],
+        "maxExtensionDp": 7.49
+      }
+    ],
+    "materials": {
+      "GREEN_RIBBON": {
+        "base": "#5B8F78",
+        "highlight": "#A9D9C5",
+        "refraction": "#326F67",
+        "widthMultiplier": 1.75,
+        "layers": [
+          "OUTER_FEATHER",
+          "TRANSLUCENT_BODY",
+          "INNER_REFRACTIVE_BAND",
+          "MOVING_SPECULAR"
+        ]
+      },
+      "CYAN_WATER_RIBBON": {
+        "base": "#348CA6",
+        "highlight": "#79D7E4",
+        "refraction": "#B4F1E8",
+        "widthMultiplier": 1.5,
+        "layers": [
+          "OUTER_FEATHER",
+          "TRANSLUCENT_BODY",
+          "INNER_REFRACTIVE_BAND",
+          "MOVING_WATER_GLINT"
+        ]
+      },
+      "WARM_GOLD_FILAMENT": {
+        "base": "#D8BC87",
+        "highlight": "#FFE6B0",
+        "refraction": "#8D754B",
+        "widthMultiplier": 1.0,
+        "layers": [
+          "SOFT_TAIL",
+          "FINE_FILAMENT",
+          "MOVING_SUN_GLINT"
+        ]
+      }
+    },
+    "motion": {
+      "clock": "RecognitionSceneFrame.opticalReferenceElapsedMs",
+      "phaseFormula": "p=fract(phase+elapsedMs/periodMs)",
+      "headDistanceFormula": "0.5-0.5*cos(2*pi*p)",
+      "directionFormula": "sign(sin(2*pi*p))",
+      "arcLengthLutSamples": 128,
+      "tailLength": {
+        "GREEN_RIBBON": 0.23,
+        "CYAN_WATER_RIBBON": 0.2,
+        "WARM_GOLD_FILAMENT": 0.15
+      },
+      "releaseHeadBrightnessMultiplier": 1.18,
+      "returnHeadBrightnessMultiplier": 1.07,
+      "directionSwitchRampMs": 260,
+      "ramp": "C1 speed ramp",
+      "deterministic": true
+    },
+    "space": {
+      "maxOuterExtensionDp": 14.0,
+      "core80dpMaxOuterRadiusD": 0.675,
+      "core68dpGeometryScale": 0.85,
+      "strokeDpAt68dp": "unchanged"
+    },
+    "renderOrder": [
+      "G01_BACK",
+      "A01_BACK",
+      "CORE",
+      "INTERNAL_DROPLETS_CAUSTICS_REFRACTION",
+      "G02_FRONT",
+      "A02_FRONT",
+      "C01_FRONT"
+    ],
+    "rule": "Use existing two-segment Cubic Bezier geometry. Do not substitute ellipses, circles, sine rings or new paths.",
+    "firstPassVisibility": {
+      "alphaGain": 1.28,
+      "absoluteAlphaCap": 0.82,
+      "sunGlintGain": 1.15,
+      "motionHeadGainOnRelease": 1.18,
+      "applyTo": "the existing five R06 filaments in both Debug and Release runtime paths, no new path geometry",
+      "noWhiteWash": true,
+      "noCoreExposureChange": true
+    }
+  },
+  "timeline": {
+    "timeAuthority": "one RecognitionSceneFrame / unified monotonic scene clock",
+    "sceneElapsedMs": "continuous breath, droplets, grass response, caustics and ambient filament life",
+    "opticalReferenceElapsedMs": "stage-local wake/release envelopes and R06 path optical motion",
+    "cameraToOrbEntrance": {
+      "durationMs": 900,
+      "segments": [
+        [
+          0,
+          150,
+          "camera activation form"
+        ],
+        [
+          150,
+          350,
+          "dissolve into transparent water core"
+        ],
+        [
+          350,
+          650,
+          "filaments extend"
+        ],
+        [
+          650,
+          900,
+          "overall settle"
+        ]
+      ],
+      "rule": "preserve existing 900ms entrance; do not append or serialize another entrance"
+    },
+    "wake": {
+      "durationMs": 350,
+      "keyframes": [
+        {
+          "tMs": 0,
+          "name": "IDLE_HOLD",
+          "progress": 0.0,
+          "layers": "core stays fully visible; no new halo; filaments hidden"
+        },
+        {
+          "tMs": 80,
+          "name": "OPTICAL_IGNITION",
+          "progress": 0.22,
+          "layers": "internal refraction and fixed upper-left sun response begin"
+        },
+        {
+          "tMs": 220,
+          "name": "WATER_CORE_AWAKE",
+          "progress": 0.72,
+          "layers": "caustics, droplet rims and coherent grass light response become visible"
+        },
+        {
+          "tMs": 350,
+          "name": "ACTIVE_READY",
+          "progress": 1.0,
+          "layers": "wake overlays reach profile limits; release event may dispatch"
+        }
+      ],
+      "easing": {
+        "type": "cubicBezier",
+        "values": [
+          0.16,
+          1.0,
+          0.3,
+          1.0
+        ]
+      },
+      "rule": "do not fade/replace the entire core image; only dynamic overlays are revealed"
+    },
+    "s1ToS2": {
+      "durationMs": 450,
+      "curve": "smoothstep",
+      "affects": "filament alpha only",
+      "coreImageChange": false
+    },
+    "s2ToS1": {
+      "durationMs": 620,
+      "curve": "returnFade",
+      "affects": "filament alpha only"
+    },
+    "breath": {
+      "S1": {
+        "periodMs": 6000,
+        "amplitude": 0.008,
+        "formula": "1+0.008*sin(2*pi*sceneElapsedMs/6000)"
+      },
+      "S2": {
+        "periodMs": 4800,
+        "amplitude": 0.018,
+        "formula": "1+0.018*sin(2π*(sceneElapsedMs-stateEntryMs)/4800)"
+      },
+      "rule": "uniform scale only; center and aspect ratio fixed; phase never resets on stage switch, pause/resume, recomposition or AUTO/MANUAL switch"
+    },
+    "releaseReturn": {
+      "ownerState": "S2_ACTIVE",
+      "windowMs": [
+        350,
+        950
+      ],
+      "durationMs": 600,
+      "keyframes": [
+        {
+          "tMs": 350,
+          "name": "RELEASE_EVENT_DISPATCH",
+          "direction": "OUTWARD",
+          "headBrightness": 1.18
+        },
+        {
+          "tMs": 450,
+          "name": "OUTWARD_FLOW_VISIBLE",
+          "direction": "OUTWARD",
+          "notes": "450ms S1→S2 filament alpha transition has completed"
+        },
+        {
+          "tMs": 690,
+          "name": "RETURN_DIRECTION_SWITCH",
+          "direction": "INWARD",
+          "rampMs": 260,
+          "notes": "C1 speed ramp; preserve current arc-length position"
+        },
+        {
+          "tMs": 950,
+          "name": "ACTIVE_ORBIT_RESUMED",
+          "direction": "AMBIENT",
+          "headBrightness": 1.0
+        }
+      ],
+      "rule": "same five R06 paths only; no new Orb state, no photo-perimeter rays, no path reset",
+      "terminology": "This is local R06 filament out-and-back within S2_ACTIVE, NOT recognition Stage 10 ORB_RETURN fish-to-Orb.",
+      "notes": "An existing 350-950ms S2 local optical loop; do not interpret local RETURN as Result page reveal, and do not attach to photo perimeter."
+    },
+    "manualPreview": {
+      "stageHoldMs": 3000,
+      "continuousLifeAnimation": "continues through the full manual hold using sceneElapsedMs",
+      "pause": "freeze both time projections together",
+      "resume": "continue from the same phases",
+      "stageSwitch": "must not reset breath, droplet, caustics, grass-response or filament phase",
+      "rule": "Default MANUAL 01/13 and single Stage authority from latest merged P0-1; S2 continuous life runs during stage hold, no second ticker."
+    }
+  },
+  "rendering": {
+    "layerOrder": [
+      "L01_ENVIRONMENT_HALO",
+      "L03_BACK_G01_A01",
+      "L06_CORE_ASSET",
+      "L04_INTERNAL_CAUSTICS",
+      "L05_BAKED_GRASS_LIGHT_RESPONSE",
+      "L02_INTERNAL_DROPLETS",
+      "L07_INTERNAL_SUN_RESPONSE",
+      "L03_FRONT_G02_A02_C01",
+      "L07_FINAL_SHELL_SPECULAR"
+    ],
+    "blendModes": {
+      "core": "SRC_OVER with source alpha",
+      "ribbonBody": "SRC_OVER premultiplied alpha",
+      "specular": "SCREEN local only",
+      "halo": "SCREEN low alpha",
+      "caustics": "SRC_OVER clipped to water mask"
+    },
+    "sizes": {
+      "80dp": {
+        "geometryScale": 1.0,
+        "maxExtensionDp": 14.0
+      },
+      "68dp": {
+        "geometryScale": 0.85,
+        "strokeWidthDpScale": 1.0,
+        "maxExtensionDp": 14.0
+      }
+    },
+    "performance": {
+      "normal": {
+        "pathSamples": 96,
+        "droplets": 3,
+        "causticsPx": [
+          96,
+          96
+        ],
+        "refreshMs": 66,
+        "buffers": 2
+      },
+      "low": {
+        "pathSamples": 48,
+        "droplets": 1,
+        "causticsPx": [
+          64,
+          64
+        ],
+        "refreshMs": 120,
+        "buffers": 2
+      },
+      "noPerFrameBitmap": true,
+      "noPerFramePathCreation": true,
+      "noPerFrameJsonParsing": true,
+      "noRandomGeometry": true
+    },
+    "preferredGrassCompositor": {
+      "priority": "single-input-texture, UV-local warping using per-leaf source-derived masks; no duplicate overlaid leaves",
+      "preferredDevice": "on Android 16 use existing renderer with runtime shader/local UV displacement, no extra GLSurfaceView",
+      "olderDeviceFallback": "static original core with clipped green/sun specular motion; explicitly record fallback, do not claim leaf deformation present",
+      "nativeSourceSrc": "same binary app/src/main/res/drawable-nodpi/processing_water_core_v1.webp",
+      "masterToRuntimeMapping": "verified against supplied alpha masks; remap UV as needed; do not adjust immutable master",
+      "parentSurface": "existing AIOrbCore host",
+      "noPerFrameBitmapAllocation": true,
+      "noIndependentTicker": true
+    },
+    "visibilityFirstPass": {
+      "filamentsAlphaGain": 1.28,
+      "filamentsCap": 0.82,
+      "grassTipMaxD": 0.03,
+      "grassLightResponseMax": 0.1,
+      "sunlightFixed": true,
+      "bakedCoreUnmodified": true
+    }
+  },
+  "knownConflicts": [
+    {
+      "id": "R01_GRASS_MOTION",
+      "status": "RESOLVED_PRODUCT_APPROVED_SCHEME_B",
+      "visualBoard": "S2 watergrass motion amplitude ±1.5%-3%; natural leaf motion is part of the design.",
+      "existingRuntimeContract": "preserve baked grass; no new leaves or per-leaf animation; global grass response alpha <=0.06.",
+      "resourceStatus": "R01_grass_back.svg and R01_grass_front.svg are revoked/deprecated and must not be integrated.",
+      "safeDefault": "keep baked grass and only apply coherent sunlight response <=0.06.",
+      "decision": "derive new four green-material leaf band masks and centerline paths from immutable Asset01, use source-sampled local UV warp, preserve original; never import revoked SVG assets",
+      "frozenResource": "ORB_GRASS_DERIVED_MASK_PATH_V1_1.json"
+    },
+    {
+      "id": "R06_CYCLE_SUMMARY",
+      "status": "RESOLVED_BY_PROFILE_PRECEDENCE",
+      "boardSummary": "S2 breath 4.8s; green/gold filament cadence 4.8s/6.5s.",
+      "detailedPathProfile": "G01 6.1s; G02 5.3s; A01 3.7s; A02 2.9s; C01 4.4s.",
+      "resolution": "S2 sphere breath uses 4.8s; each R06 path uses its detailed individual cycle and phase."
+    },
+    {
+      "id": "R02_DROPLET_SIZES",
+      "status": "RESOLVED_BY_DETAILED_PROFILE",
+      "boardSummary": "multi-scale 1-6dp",
+      "detailedProfile": "1.8dp / 2.2dp / 1.4dp",
+      "resolution": "use three fixed detailed-profile droplets; all fit within the 1-6dp visual range"
+    },
+    {
+      "id": "R05_CAUSTIC_CYCLES",
+      "status": "CANDIDATE_CONFLICT_RECORDED",
+      "runtimeContract": "6500ms deep / 4100ms surface",
+      "otherRegisterCandidate": "6900ms deep / 5400ms surface",
+      "resolution": "keep detailed runtime contract values for this first implementation; do not alter the algorithm"
+    },
+    {
+      "id": "WAKE_350_VS_S1_S2_450",
+      "status": "RESOLVED_BY_OVERLAP",
+      "resolution": "wake visual envelope ends at 350ms; S1→S2 filament-alpha transition continues to 450ms from the same scene epoch. The two are concurrent, not serial."
+    }
+  ],
+  "freezeGate": {
+    "decision": "APPROVED_SCHEME_B",
+    "decisionDate": "2026-11-03",
+    "contractStatus": "FROZEN_FOR_WORK",
+    "remainingHumanDesignConfirmationRequired": false,
+    "runtimeEvidenceStatus": "NOT_RUN",
+    "visualAcceptanceStatus": "PENDING_PRODUCT_OWNER_REAL_DEVICE",
+    "notAnAPKOrCodeChange": true,
+    "workRule": "basic tests only; no simulator, no API28, no developer-run device validation; APK owner tests",
+    "sourceIntegrityMustPass": true,
+    "mustUseThisPackageAsExactInput": true
+  },
+  "frozenAtLocalDate": "2026-11-03",
+  "productDecision": "SCHEME_B_APPROVED_DERIVE_GRASS_MASK_PATH_FROM_FROZEN_MASTER_NONDESTRUCTIVE",
+  "implementationBasis": {
+    "repository": "pan277942135/Yujian_App",
+    "policy": "Use fresh main at Work start. PR #313 unified scene clock and 13-stage reveal already merged as observed 2026-11-03. Re-read exact Main before edits; do not revert it.",
+    "workingBranchProposed": "feature/p0-2-ai-orb-wake-breath-release-v1",
+    "noSimulationOrDeviceValidationInDevWork": true,
+    "basicTestsOnly": true,
+    "apkOwnerToTest": true
+  },
+  "testMatrix": {
+    "A_CORE_SHA": "Asset01, Asset02, SpecBoard and Android Runtime Core SHA checks; source files never overwritten",
+    "B_GRASS_MASK": "All 4 per-leaf masks 1254×1254 grayscale; non-zero pixels confined to source valid alpha and allowed ROI; checksum matches frozen bundle",
+    "C_PATH_MAPPING": "Four roots, four tips, normalized source UV; no path outside Orb source bounds; 68dp/80dp mapping tests",
+    "D_MOTION": "S1 6s 0.8%, S2 4.8s 1.8%, 4 grass periods/phases and root constraints; paused frame bitwise/deterministically stable",
+    "E_STAGE": "Wake 0–350ms, filament gain 0–450ms, local release 350–950ms, photo settle 700ms, Orb entrance 900ms unchanged; hold 3s in MANUAL",
+    "F_VARIANTS": "Debug and Release compile and resolve the same candidate renderer logic (without enabling unrelated future S3)",
+    "G_SECURITY": "No GLSurfaceView, no runtime downloads, no extra permissions",
+    "H_INSTRUMENTATION": "No emulator/real-device tests in this Work; QA marked NOT_RUN until owner verifies APK"
+  }
+}

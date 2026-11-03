@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1254 1254" width="1254" height="1254">
+<!-- Technical path audit only. Not a generated vegetation overlay, not the revoked R01 SVG set. -->
+  <g id="BACK_B1" data-depth="BACK" data-source="ASSET_01_CORE_MASTER">
+    <polygon points="760,310 840,336 904,413 935,517 919,601 869,661 830,599 847,508 795,423 710,348" fill="#E4A52B" fill-opacity="0.08" stroke="#E4A52B" stroke-opacity="0.45" stroke-width="2" />
+    <path d="M 865 661 C 904 550, 836 372, 755 326" fill="none" stroke="#E4A52B" stroke-width="4" />
+    <circle cx="865" cy="661" r="6" fill="#fff0ad" />
+    <circle cx="755" cy="326" r="6" fill="#dbfcfb" />
+  </g>
+  <g id="BACK_B2" data-depth="BACK" data-source="ASSET_01_CORE_MASTER">
+    <polygon points="890,459 950,512 976,633 962,725 928,822 889,889 811,955 830,825 869,720 856,613" fill="#E4A52B" fill-opacity="0.08" stroke="#E4A52B" stroke-opacity="0.45" stroke-width="2" />
+    <path d="M 816 950 C 936 797, 962 616, 937 482" fill="none" stroke="#E4A52B" stroke-width="4" />
+    <circle cx="816" cy="950" r="6" fill="#fff0ad" />
+    <circle cx="937" cy="482" r="6" fill="#dbfcfb" />
+  </g>
+  <g id="FRONT_F1" data-depth="FRONT" data-source="ASSET_01_CORE_MASTER">
+    <polygon points="182,464 260,502 321,583 357,692 401,765 460,837 509,911 507,964 415,895 335,817 270,736 208,641 162,555" fill="#E44FB7" fill-opacity="0.08" stroke="#E44FB7" stroke-opacity="0.45" stroke-width="2" />
+    <path d="M 504 940 C 351 800, 232 658, 206 497" fill="none" stroke="#E44FB7" stroke-width="4" />
+    <circle cx="504" cy="940" r="6" fill="#fff0ad" />
+    <circle cx="206" cy="497" r="6" fill="#dbfcfb" />
+  </g>
+  <g id="FRONT_F2" data-depth="FRONT" data-source="ASSET_01_CORE_MASTER">
+    <polygon points="237,686 321,742 401,793 468,844 550,908 627,976 544,984 470,943 376,879 307,829 242,759" fill="#E44FB7" fill-opacity="0.08" stroke="#E44FB7" stroke-opacity="0.45" stroke-width="2" />
+    <path d="M 616 973 C 480 922, 345 814, 262 719" fill="none" stroke="#E44FB7" stroke-width="4" />
+    <circle cx="616" cy="973" r="6" fill="#fff0ad" />
+    <circle cx="262" cy="719" r="6" fill="#dbfcfb" />
+  </g>
+</svg>

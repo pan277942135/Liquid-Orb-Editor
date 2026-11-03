@@ -1,0 +1,75 @@
+{
+  "package_name": "AI_ORB_R06_SUPPLEMENT_PACKAGE_V1",
+  "package_version": "1.0",
+  "purpose": "Three-file R06 resource supplement for the standalone AI Orb Google AI Studio demo",
+  "source_repository": "pan277942135/Yujian_App",
+  "source_pull_request": 304,
+  "source_commit": "64700592714b8fb1c06b659b9d79c92149d2ea95",
+  "source_archive": {
+    "name": "YuJian_AI_Orb_Gap_Closure_V1_FINAL.zip",
+    "sha256": "2431b2181a073d0e1cba575b899f915a1fe8db1066ea6c753a84ebbfd12f65d5",
+    "size_bytes": 13068015,
+    "library_path": "/冻结高保/AI Orb/AI_Orb_Gap_Closure_V1/"
+  },
+  "resource_status": {
+    "manifest_status": "NEW_CANDIDATE",
+    "spec_status": "VISUAL_REVIEW_PENDING",
+    "runtime_ready": false,
+    "product_approval_required": true,
+    "profile_schema_version": "2.0",
+    "profile_status": "V2_VISUAL_CANDIDATE_PENDING_PRODUCT_REVIEW"
+  },
+  "path_ids": [
+    "G01",
+    "G02",
+    "A01",
+    "A02",
+    "C01"
+  ],
+  "validation": {
+    "profile_json_parse": "PASS",
+    "geometry_json_parse": "PASS",
+    "svg_xml_parse": "PASS",
+    "geometry_path_count": 5,
+    "geometry_segments_per_path": 2,
+    "profile_path_count": 5,
+    "profile_binding_count": 5,
+    "svg_path_count": 5,
+    "all_path_ids_match": true
+  },
+  "resources": {
+    "profile": {
+      "archive_path": "profiles/R06_orb_filament_profile.json",
+      "repository_path": "design/system/components/ai_orb_core/profiles/R06_orb_filament_profile.json",
+      "github_url": "https://github.com/pan277942135/Yujian_App/blob/64700592714b8fb1c06b659b9d79c92149d2ea95/design/system/components/ai_orb_core/profiles/R06_orb_filament_profile.json",
+      "size_bytes": 20639,
+      "sha256": "8c7f998b043ddca8363054b75a93dbe6fab72cbdf31424b4fb71c4b502f21c10",
+      "git_blob_sha1": "11395039e4c375dea008bbaef7e2abc7eae72964"
+    },
+    "geometry": {
+      "archive_path": "assets/paths/R06_orb_filament_path_geometry.json",
+      "repository_path": "design/system/components/ai_orb_core/assets/paths/R06_orb_filament_path_geometry.json",
+      "github_url": "https://github.com/pan277942135/Yujian_App/blob/64700592714b8fb1c06b659b9d79c92149d2ea95/design/system/components/ai_orb_core/assets/paths/R06_orb_filament_path_geometry.json",
+      "size_bytes": 7230,
+      "sha256": "1dfc85e651440d88c18d80daf51bbaa081e058fa60061bed6c8801aededf4cdc",
+      "git_blob_sha1": "915691a9ad8df468dab9f1954f6841797dbacfb2"
+    },
+    "svg": {
+      "archive_path": "assets/paths/R06_orb_filament_paths.svg",
+      "repository_path": "design/system/components/ai_orb_core/assets/paths/R06_orb_filament_paths.svg",
+      "github_url": "https://github.com/pan277942135/Yujian_App/blob/64700592714b8fb1c06b659b9d79c92149d2ea95/design/system/components/ai_orb_core/assets/paths/R06_orb_filament_paths.svg",
+      "size_bytes": 1337,
+      "sha256": "d321c2bdd709145fadf73f52fc3f5d81a93c7e4e9d1074dc9adf783810287389",
+      "git_blob_sha1": "167198be0b13e827c38b769cf33afe1f377f42b0"
+    }
+  },
+  "version_reconciliation": {
+    "note": "This package carries the coherent current V1.2 candidate resource set from merged PR #304. It is not represented as the V1.1 frozen byte set.",
+    "v1_1_contract_expected_sha256": {
+      "R06_orb_filament_profile.json": "075e8390aa08638ba3baca5a12f9b92b73718dc87ec1175fe3325e4cc7cad864",
+      "R06_orb_filament_path_geometry.json": "a37d947d32cdf6902cabe87be03458ab6d0dd236c4d033564a98f8a5a1a601a5",
+      "R06_orb_filament_paths.svg": "66966e0b9aaf1fe6cbb3930ae99d382a1d3a9d292ef8c3911a9e2ef45c4db52b"
+    },
+    "instruction": "Do not overwrite the frozen V1.1 contract. Treat these files as the latest source-backed V1.2 candidate set for visual debugging and retain the hashes in this manifest."
+  }
+}
