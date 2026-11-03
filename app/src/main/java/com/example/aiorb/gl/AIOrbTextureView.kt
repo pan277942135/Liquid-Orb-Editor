@@ -48,6 +48,29 @@ class AIOrbTextureView(
 
     override fun onSurfaceTextureUpdated(surface: SurfaceTexture) {}
 
+    private var lastTouchX = 0f
+    private var lastTouchY = 0f
+
+    @SuppressLint("ClickableViewAccessibility")
+    override fun onTouchEvent(event: android.view.MotionEvent): Boolean {
+        when (event.action) {
+            android.view.MotionEvent.ACTION_DOWN -> {
+                lastTouchX = event.x
+                lastTouchY = event.y
+                return true
+            }
+            android.view.MotionEvent.ACTION_MOVE -> {
+                val dx = event.x - lastTouchX
+                lastTouchX = event.x
+                lastTouchY = event.y
+                val w = width.coerceAtLeast(1).toFloat()
+                renderer.touchRotationOffset += (dx / w) * 3.14159f * 1.8f
+                return true
+            }
+        }
+        return super.onTouchEvent(event)
+    }
+
     private fun computeRenderSize(w: Int, h: Int): Pair<Int, Int> {
         val maxDim = maxOf(w, h)
         val scale = if (maxDim > 800) 0.5f else 1.0f

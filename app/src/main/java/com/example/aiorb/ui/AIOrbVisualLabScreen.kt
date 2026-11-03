@@ -367,77 +367,25 @@ private fun MetricsHudBar(uiState: AIOrbUiState) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 14.dp, vertical = 2.dp),
+            .padding(horizontal = 12.dp, vertical = 2.dp),
         shape = RoundedCornerShape(12.dp),
-        color = Color(0x99090C16)
+        color = Color(0xB3090C16),
+        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0x3338BDF8))
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 10.dp, vertical = 6.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+                .padding(horizontal = 10.dp, vertical = 6.dp)
         ) {
-            if (uiState.labMode == AIOrbLabMode.RELEASE_PREVIEW) {
-                // RELEASE Special Phase chip
+            // Row 1: State Chip, Cycle, R_uv, Size
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 val stateColor = when {
                     uiState.isPaused -> Color(0xFFEAB308)
                     uiState.isHold -> Color(0xFFF59E0B)
-                    uiState.currentPhaseEvent == OrbPhaseEvent.RELEASE -> Color(0xFFEC4899)
-                    uiState.currentPhaseEvent == OrbPhaseEvent.RETURN -> Color(0xFFA855F7)
-                    else -> Color(0xFF10B981)
-                }
-                val stateText = when {
-                    uiState.isPaused -> "PAUSED"
-                    uiState.isHold -> "HOLD (350–690ms)"
-                    uiState.currentPhaseEvent == OrbPhaseEvent.RELEASE -> "RELEASE (0–350ms)"
-                    uiState.currentPhaseEvent == OrbPhaseEvent.RETURN -> "RETURN (690–950ms)"
-                    else -> "S2 BREATH"
-                }
-
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(stateColor.copy(alpha = 0.2f))
-                        .border(1.dp, stateColor.copy(alpha = 0.6f), RoundedCornerShape(6.dp))
-                        .padding(horizontal = 8.dp, vertical = 2.dp)
-                ) {
-                    Text(
-                        text = stateText,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = stateColor
-                    )
-                }
-
-                // Cycle info: Cycle #N (time/950ms)
-                Text(
-                    text = "Cycle #${uiState.releaseCycleIndex} (${uiState.releaseCycleElapsedMs}ms/950ms)",
-                    fontSize = 11.sp,
-                    fontFamily = FontFamily.Monospace,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color(0xFF67E8F9)
-                )
-
-                // R06 5 Paths status
-                Text(
-                    text = "5/5 R06 Paths",
-                    fontSize = 11.sp,
-                    fontFamily = FontFamily.Monospace,
-                    color = Color(0xFF86EFAC)
-                )
-
-                // Size
-                Text(
-                    text = "${(uiState.orbSizeScale * 80).toInt()}dp",
-                    fontSize = 11.sp,
-                    fontFamily = FontFamily.Monospace,
-                    color = Color(0xFF38BDF8)
-                )
-            } else {
-                // Full lifecycle HUD
-                val stateColor = when {
-                    uiState.isPaused -> Color(0xFFEAB308)
                     uiState.currentPhaseEvent == OrbPhaseEvent.RELEASE -> Color(0xFFEC4899)
                     uiState.currentPhaseEvent == OrbPhaseEvent.RETURN -> Color(0xFFA855F7)
                     uiState.currentPhaseEvent == OrbPhaseEvent.WAKE -> Color(0xFF06B6D4)
@@ -446,11 +394,12 @@ private fun MetricsHudBar(uiState: AIOrbUiState) {
                 }
                 val stateText = when {
                     uiState.isPaused -> "PAUSED"
-                    uiState.currentPhaseEvent == OrbPhaseEvent.RELEASE -> "S2 RELEASE (0–690ms)"
-                    uiState.currentPhaseEvent == OrbPhaseEvent.RETURN -> "S2 RETURN (690–950ms)"
-                    uiState.currentPhaseEvent == OrbPhaseEvent.WAKE -> "S1→S2 WAKE (350ms)"
-                    uiState.lifeState == OrbLifeState.S2_ACTIVE -> "S2 ACTIVE BREATH"
-                    else -> "S1 IDLE (6.0s)"
+                    uiState.isHold -> "HOLD (350–690ms)"
+                    uiState.currentPhaseEvent == OrbPhaseEvent.RELEASE -> "RELEASE (0–350ms)"
+                    uiState.currentPhaseEvent == OrbPhaseEvent.RETURN -> "RETURN (690–950ms)"
+                    uiState.currentPhaseEvent == OrbPhaseEvent.WAKE -> "WAKE"
+                    uiState.lifeState == OrbLifeState.S2_ACTIVE -> "S2 BREATH"
+                    else -> "S1 IDLE"
                 }
 
                 Box(
@@ -458,35 +407,107 @@ private fun MetricsHudBar(uiState: AIOrbUiState) {
                         .clip(RoundedCornerShape(6.dp))
                         .background(stateColor.copy(alpha = 0.2f))
                         .border(1.dp, stateColor.copy(alpha = 0.6f), RoundedCornerShape(6.dp))
-                        .padding(horizontal = 8.dp, vertical = 2.dp)
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
                 ) {
                     Text(
                         text = stateText,
-                        fontSize = 10.sp,
+                        fontSize = 9.sp,
                         fontWeight = FontWeight.Bold,
                         color = stateColor
                     )
                 }
 
                 Text(
-                    text = "t:${uiState.sceneElapsedMs}ms",
-                    fontSize = 11.sp,
+                    text = "Cycle #${uiState.releaseCycleIndex} (${uiState.releaseCycleElapsedMs}ms/950ms)",
+                    fontSize = 10.sp,
                     fontFamily = FontFamily.Monospace,
-                    color = Color(0xFF94A3B8)
-                )
-
-                Text(
-                    text = "W:${(uiState.wakeProgress * 100).toInt()}% R:${(uiState.releaseProgress * 100).toInt()}%",
-                    fontSize = 11.sp,
-                    fontFamily = FontFamily.Monospace,
+                    fontWeight = FontWeight.SemiBold,
                     color = Color(0xFF67E8F9)
                 )
 
                 Text(
-                    text = "${(uiState.orbSizeScale * 80).toInt()}dp",
-                    fontSize = 11.sp,
+                    text = "R_uv:${String.format(Locale.US, "%.4f", uiState.coreVisibleRadiusUv)}",
+                    fontSize = 10.sp,
+                    fontFamily = FontFamily.Monospace,
+                    color = Color(0xFFA7F3D0)
+                )
+
+                Text(
+                    text = "${(uiState.orbSizeScale * 80).toInt()}dp (${uiState.orbDiameterRenderPx.toInt()}px)",
+                    fontSize = 10.sp,
                     fontFamily = FontFamily.Monospace,
                     color = Color(0xFF38BDF8)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(3.dp))
+
+            // Row 2: Diagnostic Mode, Active Paths (G01, G02, A01, A02, C01), Alpha, GL Status
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Diag Mode Badge
+                val diagModeColor = when (uiState.diagnosticMode) {
+                    com.example.aiorb.model.R06DiagnosticMode.RUNTIME -> Color(0xFF10B981)
+                    com.example.aiorb.model.R06DiagnosticMode.GEOMETRY_ONLY -> Color(0xFFF59E0B)
+                    com.example.aiorb.model.R06DiagnosticMode.MATERIAL -> Color(0xFFEC4899)
+                }
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(diagModeColor.copy(alpha = 0.2f))
+                        .padding(horizontal = 4.dp, vertical = 1.dp)
+                ) {
+                    Text(
+                        text = "MODE: ${uiState.diagnosticMode.label}",
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = diagModeColor
+                    )
+                }
+
+                // 5 Paths mini indicators
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    val paths = listOf("G01", "G02", "A01", "A02", "C01")
+                    for (pid in paths) {
+                        val active = pid in uiState.enabledPathIds
+                        val pColor = when {
+                            pid.startsWith("G") -> Color(0xFF34D399)
+                            pid.startsWith("A") -> Color(0xFFFBBF24)
+                            else -> Color(0xFF38BDF8)
+                        }
+                        Text(
+                            text = pid,
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = FontFamily.Monospace,
+                            color = if (active) pColor else Color(0xFF475569)
+                        )
+                    }
+                }
+
+                Text(
+                    text = "Rot:${String.format(Locale.US, "%.1f", uiState.rotationSpeed)}x",
+                    fontSize = 9.sp,
+                    fontFamily = FontFamily.Monospace,
+                    color = Color(0xFFFDE047)
+                )
+
+                Text(
+                    text = "Alpha:${(uiState.filamentAlphaProgress * 100).toInt()}%",
+                    fontSize = 10.sp,
+                    fontFamily = FontFamily.Monospace,
+                    color = Color(0xFFE2E8F0)
+                )
+
+                Text(
+                    text = if (uiState.coreShaderCompiled && uiState.filamentShaderCompiled) "GL: OK" else "GL: ERR",
+                    fontSize = 9.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = FontFamily.Monospace,
+                    color = if (uiState.coreShaderCompiled && uiState.filamentShaderCompiled) Color(0xFF4ADE80) else Color(0xFFEF4444)
                 )
             }
         }
@@ -638,8 +659,6 @@ private fun BottomControlPanel(
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(8.dp))
-
                     // 2. Orb Size Controls (球体大小控制参数)
                     OrbSizeControlSection(
                         currentScale = uiState.orbSizeScale,
@@ -648,7 +667,15 @@ private fun BottomControlPanel(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // 3. Optical Parameters Tuning
+                    // 3. R06 Diagnostic Controls (光丝诊断、几何模式与材质分离)
+                    R06DiagnosticSection(
+                        uiState = uiState,
+                        viewModel = viewModel
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // 4. Optical Parameters Tuning
                     TuningParametersSection(
                         uiState = uiState,
                         viewModel = viewModel
@@ -743,6 +770,166 @@ private fun OrbSizeControlSection(
                 displayFormat = "%.2fx",
                 unit = " (${(currentScale * 80).toInt()}dp)"
             )
+        }
+    }
+}
+
+@Composable
+private fun R06DiagnosticSection(
+    uiState: AIOrbUiState,
+    viewModel: AIOrbViewModel
+) {
+    Surface(
+        shape = RoundedCornerShape(14.dp),
+        color = Color(0x9913192B),
+        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0x3338BDF8)),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 2.dp)
+    ) {
+        Column(modifier = Modifier.padding(10.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "R06 外部光丝诊断 (R06 Diagnostics)",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFFFBBF24)
+                )
+                Text(
+                    text = "96细分 / 0.3971 UV",
+                    fontSize = 10.sp,
+                    fontFamily = FontFamily.Monospace,
+                    color = Color(0xFF94A3B8)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            // Diagnostic Mode Selector (Segmented)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color(0xFF0F172A))
+                    .padding(2.dp),
+                horizontalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                for (mode in com.example.aiorb.model.R06DiagnosticMode.values()) {
+                    val isSelected = uiState.diagnosticMode == mode
+                    val selBg = when (mode) {
+                        com.example.aiorb.model.R06DiagnosticMode.RUNTIME -> Color(0xFF059669)
+                        com.example.aiorb.model.R06DiagnosticMode.GEOMETRY_ONLY -> Color(0xFFD97706)
+                        com.example.aiorb.model.R06DiagnosticMode.MATERIAL -> Color(0xFFDB2777)
+                    }
+                    Surface(
+                        shape = RoundedCornerShape(6.dp),
+                        color = if (isSelected) selBg else Color.Transparent,
+                        modifier = Modifier
+                            .weight(1f)
+                            .clickable { viewModel.setDiagnosticMode(mode) }
+                            .testTag("diag_mode_${mode.name.lowercase()}")
+                    ) {
+                        Text(
+                            text = when (mode) {
+                                com.example.aiorb.model.R06DiagnosticMode.RUNTIME -> "正常光学 (Runtime)"
+                                com.example.aiorb.model.R06DiagnosticMode.GEOMETRY_ONLY -> "纯几何 (Geometry)"
+                                com.example.aiorb.model.R06DiagnosticMode.MATERIAL -> "材质层 (Material)"
+                            },
+                            fontSize = 10.sp,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                            color = if (isSelected) Color.White else Color(0xFF94A3B8),
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                            modifier = Modifier.padding(vertical = 6.dp)
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Individual 5 Paths Toggles
+            Text(
+                text = "五条冻结光丝独立可见性开关 (Path Isolation):",
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color(0xFFCBD5E1)
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                val pathConfigs = listOf(
+                    Triple("G01", "G01 (绿/后)", Color(0xFF34D399)),
+                    Triple("G02", "G02 (绿/前)", Color(0xFF10B981)),
+                    Triple("A01", "A01 (金/后)", Color(0xFFFBBF24)),
+                    Triple("A02", "A02 (金/前)", Color(0xFFF59E0B)),
+                    Triple("C01", "C01 (青/前)", Color(0xFF38BDF8))
+                )
+                for ((pid, _, col) in pathConfigs) {
+                    val isEnabled = pid in uiState.enabledPathIds
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = if (isEnabled) col.copy(alpha = 0.25f) else Color(0xFF1E293B),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, if (isEnabled) col else Color(0x33FFFFFF)),
+                        modifier = Modifier
+                            .weight(1f)
+                            .clickable { viewModel.togglePath(pid) }
+                            .testTag("toggle_path_$pid")
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(vertical = 4.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = pid,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = if (isEnabled) col else Color(0xFF64748B)
+                            )
+                            Text(
+                                text = if (isEnabled) "ON" else "OFF",
+                                fontSize = 9.sp,
+                                color = if (isEnabled) Color.White else Color(0xFF64748B)
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            // Low Power Mode Toggle (48 vs 96 Subdivisions)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "网格细分精度: ${if (uiState.isLowPowerMode) "48段 (低功耗)" else "96段 (高精平滑)"}",
+                    fontSize = 11.sp,
+                    color = Color(0xFF94A3B8)
+                )
+                Surface(
+                    shape = RoundedCornerShape(6.dp),
+                    color = if (uiState.isLowPowerMode) Color(0xFF475569) else Color(0xFF0284C7),
+                    modifier = Modifier
+                        .clickable { viewModel.toggleLowPowerMode() }
+                        .testTag("low_power_toggle_button")
+                ) {
+                    Text(
+                        text = if (uiState.isLowPowerMode) "切换96段" else "切换48段",
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
+                }
+            }
         }
     }
 }
@@ -1002,6 +1189,24 @@ private fun TuningParametersSection(
                 range = 0.0f..2.0f,
                 onValueChange = { viewModel.updateDropletVisibility(it) },
                 testTag = "slider_droplets"
+            )
+
+            OrbSliderRow(
+                title = "Sphere Rotation Speed (球体自转速度)",
+                value = uiState.rotationSpeed,
+                range = 0.0f..2.0f,
+                onValueChange = { viewModel.updateRotationSpeed(it) },
+                testTag = "slider_rotation_speed",
+                displayFormat = "%.2fx"
+            )
+
+            OrbSliderRow(
+                title = "Filament HDR Glow (光丝高保真辉光/泛光)",
+                value = uiState.glowIntensity,
+                range = 0.5f..3.5f,
+                onValueChange = { viewModel.updateGlowIntensity(it) },
+                testTag = "slider_glow_intensity",
+                displayFormat = "%.2fx"
             )
 
             OrbSliderRow(

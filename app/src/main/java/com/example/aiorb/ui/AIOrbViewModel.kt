@@ -3,13 +3,14 @@ package com.example.aiorb.ui
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import com.example.aiorb.gl.AIOrbRenderer
-import com.example.aiorb.model.OrbLifeState
-import com.example.aiorb.model.OrbPhaseEvent
-import com.example.aiorb.model.OrbSceneFrame
+import com.example.aiorb.gl.OrbCoordinateMapper
+import com.example.aiorb.model.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import org.json.JSONObject
+import kotlin.math.PI
+import kotlin.math.sin
 
 enum class AIOrbLabMode {
     RELEASE_PREVIEW,
@@ -38,6 +39,15 @@ data class AIOrbUiState(
     val releaseCycleElapsedMs: Long = 0L,
     val isHold: Boolean = false,
 
+    // R06 Diagnostics & Inspection
+    val diagnosticMode: R06DiagnosticMode = R06DiagnosticMode.RUNTIME,
+    val enabledPathIds: Set<String> = setOf("G01", "G02", "A01", "A02", "C01"),
+    val isLowPowerMode: Boolean = false,
+    val coreVisibleRadiusUv: Float = OrbCoordinateMapper.CORE_VISIBLE_RADIUS_UV,
+    val orbDiameterRenderPx: Float = 0f,
+    val coreShaderCompiled: Boolean = true,
+    val filamentShaderCompiled: Boolean = true,
+
     // Tuning Parameters
     val sunlightIntensity: Float = 1.0f,
     val refractionIntensity: Float = 1.0f,
@@ -46,6 +56,11 @@ data class AIOrbUiState(
     val dropletVisibility: Float = 1.0f,
     val filamentAlpha: Float = 1.0f,
     val filamentWidth: Float = 1.0f,
+
+    // 3D Sphere Self-Rotation & HDR Glow Optics
+    val rotationSpeed: Float = 0.45f,
+    val isAutoRotate: Boolean = true,
+    val glowIntensity: Float = 1.8f,
 
     // UI Panel state
     val isBottomPanelExpanded: Boolean = true,
@@ -69,6 +84,16 @@ class AIOrbViewModel(application: Application) : AndroidViewModel(application) {
     val uiState: StateFlow<AIOrbUiState> = _uiState.asStateFlow()
 
     fun updateFromFrame(frame: OrbSceneFrame) {
+        val breathAmp = if (frame.lifeState == OrbLifeState.S2_ACTIVE) 0.018f else 0.008f
+        val breathPeriod = if (frame.lifeState == OrbLifeState.S2_ACTIVE) 4800.0 else 6000.0
+        val breathPhase = 2.0 * PI * (frame.sceneElapsedMs.toDouble() / breathPeriod)
+        val currentScale = (1.0f + breathAmp * sin(breathPhase).toFloat()) * renderer.orbSizeScale
+        val renderPx = OrbCoordinateMapper.computeOrbDiameterRenderPx(
+            renderer.viewWidth,
+            renderer.viewHeight,
+            currentScale
+        )
+
         _uiState.value = _uiState.value.copy(
             lifeState = frame.lifeState,
             currentPhaseEvent = frame.currentPhaseEvent,
@@ -81,7 +106,10 @@ class AIOrbViewModel(application: Application) : AndroidViewModel(application) {
             releaseCycleIndex = frame.releaseCycleIndex,
             releaseCycleElapsedMs = frame.releaseCycleElapsedMs,
             releaseLoopEnabled = frame.releaseLoopEnabled,
-            isHold = frame.isHold
+            isHold = frame.isHold,
+            orbDiameterRenderPx = renderPx,
+            coreShaderCompiled = renderer.coreShaderCompiled,
+            filamentShaderCompiled = renderer.filamentShaderCompiled
         )
     }
 
@@ -105,6 +133,33 @@ class AIOrbViewModel(application: Application) : AndroidViewModel(application) {
         _uiState.value = _uiState.value.copy(releaseLoopEnabled = nextLoop)
     }
 
+    // === R06 Diagnostic Controls ===
+
+    fun setDiagnosticMode(mode: R06DiagnosticMode) {
+        renderer.diagnosticMode = mode
+        _uiState.value = _uiState.value.copy(diagnosticMode = mode)
+    }
+
+    fun togglePath(pathId: String) {
+        val currentSet = _uiState.value.enabledPathIds.toMutableSet()
+        if (currentSet.contains(pathId)) {
+            if (currentSet.size > 1) { // Keep at least one enabled
+                currentSet.remove(pathId)
+            }
+        } else {
+            currentSet.add(pathId)
+        }
+        renderer.enabledPathIds.clear()
+        renderer.enabledPathIds.addAll(currentSet)
+        _uiState.value = _uiState.value.copy(enabledPathIds = currentSet)
+    }
+
+    fun toggleLowPowerMode() {
+        val next = !_uiState.value.isLowPowerMode
+        renderer.isLowPowerMode = next
+        _uiState.value = _uiState.value.copy(isLowPowerMode = next)
+    }
+
     // === Core Visual Actions ===
 
     fun triggerWake() {
@@ -122,8 +177,6 @@ class AIOrbViewModel(application: Application) : AndroidViewModel(application) {
         clock.triggerRelease()
     }
 
-    // === Playback Controls ===
-
     fun togglePlayPause() {
         if (clock.isPaused) {
             clock.resume()
@@ -136,65 +189,49 @@ class AIOrbViewModel(application: Application) : AndroidViewModel(application) {
 
     fun replay() {
         if (_uiState.value.labMode == AIOrbLabMode.RELEASE_PREVIEW) {
-            // Replay release without executing wake
             clock.replayRelease()
-            _uiState.value = _uiState.value.copy(isPlaying = true, isPaused = false)
         } else {
-            // Full lifecycle replay wake
             clock.reset()
             clock.triggerWake()
-            _uiState.value = _uiState.value.copy(isPlaying = true, isPaused = false)
         }
+        _uiState.value = _uiState.value.copy(isPlaying = true, isPaused = false)
     }
 
     fun reset() {
-        if (_uiState.value.labMode == AIOrbLabMode.RELEASE_PREVIEW) {
-            clock.replayRelease()
-            _uiState.value = _uiState.value.copy(isPlaying = true, isPaused = false)
-        } else {
-            clock.reset()
-            _uiState.value = _uiState.value.copy(
-                isPlaying = true,
-                isPaused = false,
-                lifeState = OrbLifeState.S1_IDLE,
-                currentPhaseEvent = OrbPhaseEvent.NONE
-            )
-        }
-    }
-
-    fun updateOrbSizeScale(scale: Float) {
-        val clamped = scale.coerceIn(0.2f, 2.0f)
-        renderer.orbSizeScale = clamped
+        clock.reset()
         _uiState.value = _uiState.value.copy(
-            orbSizeScale = clamped,
-            is80dp = (clamped >= 0.95f)
+            isPlaying = true,
+            isPaused = false
         )
     }
 
-    fun setSizePreset(scale: Float) {
-        updateOrbSizeScale(scale)
-    }
+    // === Size & Layout Controls ===
 
     fun toggleSize() {
-        val cur = _uiState.value.orbSizeScale
-        val next = when {
-            cur < 0.65f -> 0.85f // to 68dp
-            cur < 0.95f -> 1.0f  // to 80dp
-            cur < 1.15f -> 1.25f // to 100dp
-            else -> 0.5f         // to default 40dp (half size)
-        }
-        updateOrbSizeScale(next)
+        // Toggle between 0.5 (40dp) and 1.0 (80dp)
+        val newScale = if (_uiState.value.orbSizeScale <= 0.6f) 1.0f else 0.5f
+        updateOrbSizeScale(newScale)
+    }
+
+    fun updateOrbSizeScale(scale: Float) {
+        renderer.orbSizeScale = scale
+        _uiState.value = _uiState.value.copy(
+            orbSizeScale = scale,
+            is80dp = scale >= 0.9f
+        )
     }
 
     fun toggleBottomPanel() {
-        _uiState.value = _uiState.value.copy(isBottomPanelExpanded = !_uiState.value.isBottomPanelExpanded)
+        _uiState.value = _uiState.value.copy(
+            isBottomPanelExpanded = !_uiState.value.isBottomPanelExpanded
+        )
     }
 
     fun setBottomPanelExpanded(expanded: Boolean) {
         _uiState.value = _uiState.value.copy(isBottomPanelExpanded = expanded)
     }
 
-    // === Parameter Tuning Sliders ===
+    // === Parameter Tuning Handlers ===
 
     fun updateSunlightIntensity(v: Float) {
         renderer.sunlightIntensityMultiplier = v
@@ -231,6 +268,22 @@ class AIOrbViewModel(application: Application) : AndroidViewModel(application) {
         _uiState.value = _uiState.value.copy(filamentWidth = v)
     }
 
+    fun updateRotationSpeed(speed: Float) {
+        renderer.rotationSpeed = speed
+        _uiState.value = _uiState.value.copy(rotationSpeed = speed)
+    }
+
+    fun toggleAutoRotate() {
+        val next = !_uiState.value.isAutoRotate
+        renderer.isAutoRotate = next
+        _uiState.value = _uiState.value.copy(isAutoRotate = next)
+    }
+
+    fun updateGlowIntensity(v: Float) {
+        renderer.glowIntensityMultiplier = v
+        _uiState.value = _uiState.value.copy(glowIntensity = v)
+    }
+
     fun toggleTuningPanel() {
         _uiState.value = _uiState.value.copy(showTuningPanel = !_uiState.value.showTuningPanel)
     }
@@ -244,6 +297,13 @@ class AIOrbViewModel(application: Application) : AndroidViewModel(application) {
         updateFilamentAlpha(1.0f)
         updateFilamentWidth(1.0f)
         updateOrbSizeScale(0.5f) // Default is half size (40dp)
+        setDiagnosticMode(R06DiagnosticMode.RUNTIME)
+        renderer.enabledPathIds.clear()
+        renderer.enabledPathIds.addAll(listOf("G01", "G02", "A01", "A02", "C01"))
+        _uiState.value = _uiState.value.copy(
+            enabledPathIds = setOf("G01", "G02", "A01", "A02", "C01"),
+            isLowPowerMode = false
+        )
     }
 
     fun exportCalibrationJson() {
@@ -254,6 +314,10 @@ class AIOrbViewModel(application: Application) : AndroidViewModel(application) {
             put("labMode", s.labMode.name)
             put("releaseLoopEnabled", s.releaseLoopEnabled)
             put("releaseCycleIndex", s.releaseCycleIndex)
+            put("diagnosticMode", s.diagnosticMode.name)
+            put("coreVisibleRadiusUv", s.coreVisibleRadiusUv)
+            put("orbDiameterDp", s.orbSizeScale * 80.0)
+            put("orbDiameterRenderPx", s.orbDiameterRenderPx)
             put("sunlightIntensityMultiplier", s.sunlightIntensity)
             put("refractionIntensityMultiplier", s.refractionIntensity)
             put("causticsIntensityMultiplier", s.causticsIntensity)
@@ -262,7 +326,6 @@ class AIOrbViewModel(application: Application) : AndroidViewModel(application) {
             put("filamentAlphaMultiplier", s.filamentAlpha)
             put("filamentWidthMultiplier", s.filamentWidth)
             put("orbSizeScale", s.orbSizeScale)
-            put("orbDiameterDp", s.orbSizeScale * 80.0)
             put("r06FilamentFirstPassGain", 1.28)
             put("r06FilamentAlphaCap", 0.82)
             put("r06SunGlintGain", 1.15)
