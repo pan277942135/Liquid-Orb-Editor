@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Outer soft aura glow -->
+    <path
+        android:pathData="M54,54m-33,0a33,33 0 1,1 66,0a33,33 0 1,1 -66,0">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:centerX="54"
+                android:centerY="54"
+                android:gradientRadius="34"
+                android:type="radial">
+                <item android:offset="0.0" android:color="#77A855F7" />
+                <item android:offset="0.65" android:color="#3306B6D4" />
+                <item android:offset="1.0" android:color="#00000000" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Glass sphere body -->
+    <path
+        android:pathData="M54,54m-26,0a26,26 0 1,1 52,0a26,26 0 1,1 -52,0">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="32"
+                android:startY="30"
+                android:endX="76"
+                android:endY="78"
+                android:type="linear">
+                <item android:offset="0.0" android:color="#FF6366F1" />
+                <item android:offset="0.45" android:color="#FFA855F7" />
+                <item android:offset="0.8" android:color="#FFEC4899" />
+                <item android:offset="1.0" android:color="#FF06B6D4" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Internal liquid wave ribbon 1 -->
+    <path
+        android:pathData="M34,58 C38,48 48,46 54,52 C60,58 70,54 74,48 C74,58 68,72 54,72 C42,72 35,66 34,58 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="34"
+                android:startY="50"
+                android:endX="74"
+                android:endY="70"
+                android:type="linear">
+                <item android:offset="0.0" android:color="#CC22D3EE" />
+                <item android:offset="0.6" android:color="#AAF43F5E" />
+                <item android:offset="1.0" android:color="#44A855F7" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Internal liquid wave ribbon 2 -->
+    <path
+        android:pathData="M36,46 C42,40 50,56 62,48 C68,44 72,46 72,46 C74,52 72,60 68,66 C56,58 48,60 40,54 C37,51 36,48 36,46 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="36"
+                android:startY="42"
+                android:endX="72"
+                android:endY="64"
+                android:type="linear">
+                <item android:offset="0.0" android:color="#DD38BDF8" />
+                <item android:offset="0.5" android:color="#BBE879F9" />
+                <item android:offset="1.0" android:color="#88818CF8" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Caustic refraction rim highlight -->
+    <path
+        android:pathData="M54,54m-26,0a26,26 0 1,1 52,0a26,26 0 1,1 -52,0"
+        android:strokeWidth="1.8"
+        android:strokeColor="#AAFFFFFF"
+        android:fillColor="#00000000" />
+
+    <!-- Top glossy specular highlight arc -->
+    <path
+        android:pathData="M40,36 C44,32 64,32 68,36 C64,34 44,34 40,36 Z"
+        android:fillColor="#EEFFFFFF" />
+
+    <!-- Top-left secondary specular spot -->
+    <path
+        android:pathData="M44,40 C43,38 46,36 49,38 C51,39 49,42 46,42 C44,42 44,41 44,40 Z"
+        android:fillColor="#FFFFFFFF" />
+</vector>

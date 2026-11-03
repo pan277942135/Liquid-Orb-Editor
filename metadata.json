@@ -1,0 +1,6 @@
+{
+  "name": "Liquid Orb Editor",
+  "description": "Real-time liquid-glass orb editor inspired by LerSent001/orb with 13 dynamic presets, custom glass physics, audio reactivity, and cross-platform code export.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
