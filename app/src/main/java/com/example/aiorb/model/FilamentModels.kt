@@ -42,24 +42,24 @@ enum class FilamentMaterialType(
     val tailLengthRatio: Float
 ) {
     GREEN_RIBBON(
-        baseColor = Color.parseColor("#5B8F78"),
-        highlightColor = Color.parseColor("#A9D9C5"),
-        refractionColor = Color.parseColor("#326F67"),
-        widthMultiplier = 1.75f,
+        baseColor = Color.parseColor("#14EAA0"),
+        highlightColor = Color.parseColor("#D8FF5C"),
+        refractionColor = Color.parseColor("#068C7A"),
+        widthMultiplier = 2.4f,
         tailLengthRatio = 0.23f
     ),
     WARM_GOLD_FILAMENT(
-        baseColor = Color.parseColor("#D8BC87"),
-        highlightColor = Color.parseColor("#FFE6B0"),
-        refractionColor = Color.parseColor("#8D754B"),
-        widthMultiplier = 1.0f,
+        baseColor = Color.parseColor("#FFBA26"),
+        highlightColor = Color.parseColor("#FFFCE6"),
+        refractionColor = Color.parseColor("#FF7700"),
+        widthMultiplier = 1.35f,
         tailLengthRatio = 0.15f
     ),
     CYAN_WATER_RIBBON(
-        baseColor = Color.parseColor("#348CA6"),
-        highlightColor = Color.parseColor("#79D7E4"),
-        refractionColor = Color.parseColor("#B4F1E8"),
-        widthMultiplier = 1.5f,
+        baseColor = Color.parseColor("#00DCFF"),
+        highlightColor = Color.parseColor("#EEFBFF"),
+        refractionColor = Color.parseColor("#0088E0"),
+        widthMultiplier = 1.6f,
         tailLengthRatio = 0.20f
     )
 }

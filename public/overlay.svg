@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="-512 -512 1024 1024">
+<image href="feicui_orb.png" x="-512" y="-512" width="1024" height="1024"/>
+<path d="M -447.29 235.85 C -496.09 -138.25 -349.70 -447.29 -130.12 -414.76 C 121.99 -504.22 414.76 -162.65 357.83 178.92" fill="none" stroke="#14EAA0" stroke-width="8" stroke-linecap="round"/>
+<path d="M -471.69 138.25 C -317.17 341.57 -56.93 341.57 113.86 178.92 C 300.91 32.53 471.69 178.92 365.97 365.97" fill="none" stroke="#50FF50" stroke-width="8" stroke-linecap="round"/>
+<path d="M -439.16 -162.65 C -203.32 -471.69 154.52 -487.96 431.03 -211.45 C 292.77 -121.99 333.44 203.32 455.43 260.24" fill="none" stroke="#FFBA26" stroke-width="8" stroke-linecap="round"/>
+<path d="M -447.29 203.32 C -243.98 40.66 -56.93 390.37 162.65 382.23 C 357.83 414.76 431.03 162.65 479.82 -32.53" fill="none" stroke="#FFEE55" stroke-width="8" stroke-linecap="round"/>
+<path d="M -422.90 -105.72 C -252.11 203.32 -154.52 276.51 24.40 284.64 C 243.98 390.37 390.37 227.71 455.43 16.27" fill="none" stroke="#00DCFF" stroke-width="8" stroke-linecap="round"/>
+</svg>

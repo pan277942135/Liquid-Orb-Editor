@@ -19,47 +19,47 @@
       "type": "green",
       "depth": "BACK",
       "start": [
-        -0.55,
-        0.29
+        -0.42,
+        0.46
       ],
       "segments": [
         {
           "c1": [
-            -0.61,
-            -0.17
+            -0.52,
+            0.36
           ],
           "c2": [
-            -0.43,
-            -0.55
+            -0.59,
+            0.1
           ],
           "end": [
-            -0.16,
-            -0.51
+            -0.56,
+            -0.2
           ]
         },
         {
           "c1": [
-            0.15,
-            -0.62
+            -0.52,
+            -0.4
           ],
           "c2": [
-            0.51,
-            -0.2
+            -0.46,
+            -0.52
           ],
           "end": [
-            0.44,
-            0.22
+            -0.38,
+            -0.52
           ]
         }
       ],
       "end": [
-        0.44,
-        0.22
+        -0.38,
+        -0.52
       ],
-      "arc_length_D": 2.118582,
-      "heading_start_deg": -97.431,
-      "heading_end_deg": 99.462,
-      "max_radius_D": 0.621772,
+      "arc_length_D": 1.08123,
+      "heading_start_deg": -135.0,
+      "heading_end_deg": 0.0,
+      "max_radius_D": 0.66223,
       "width_dp_min_max": [
         1.5,
         3.2
@@ -72,7 +72,7 @@
         "head": {
           "u": [
             0.7,
-            1
+            1.0
           ],
           "highlight_multiplier": 1.18
         },
@@ -81,11 +81,11 @@
             0.12,
             0.7
           ],
-          "highlight_multiplier": 1
+          "highlight_multiplier": 1.0
         },
         "tail": {
           "u": [
-            0,
+            0.0,
             0.12
           ],
           "alpha_multiplier": 0.18
@@ -99,47 +99,47 @@
       "type": "green",
       "depth": "FRONT",
       "start": [
-        -0.58,
-        0.17
+        -0.38,
+        -0.52
       ],
       "segments": [
         {
           "c1": [
-            -0.39,
-            0.42
+            -0.1,
+            -0.38
           ],
           "c2": [
-            -0.07,
-            0.42
+            0.32,
+            -0.1
           ],
           "end": [
-            0.14,
-            0.22
+            0.5,
+            0.18
           ]
         },
         {
           "c1": [
-            0.37,
-            0.04
+            0.6,
+            0.4
           ],
           "c2": [
-            0.58,
-            0.22
+            0.2,
+            0.62
           ],
           "end": [
-            0.45,
-            0.45
+            -0.42,
+            0.46
           ]
         }
       ],
       "end": [
-        0.45,
-        0.45
+        -0.42,
+        0.46
       ],
-      "arc_length_D": 1.430731,
-      "heading_start_deg": 52.765,
-      "heading_end_deg": 119.476,
-      "max_radius_D": 0.636396,
+      "arc_length_D": 2.261097,
+      "heading_start_deg": 26.565,
+      "heading_end_deg": -165.53,
+      "max_radius_D": 0.64405,
       "width_dp_min_max": [
         1.4,
         2.7
@@ -152,7 +152,7 @@
         "head": {
           "u": [
             0.7,
-            1
+            1.0
           ],
           "highlight_multiplier": 1.18
         },
@@ -161,11 +161,11 @@
             0.12,
             0.7
           ],
-          "highlight_multiplier": 1
+          "highlight_multiplier": 1.0
         },
         "tail": {
           "u": [
-            0,
+            0.0,
             0.12
           ],
           "alpha_multiplier": 0.18
@@ -179,47 +179,47 @@
       "type": "gold",
       "depth": "BACK",
       "start": [
-        -0.54,
-        -0.2
+        0.48,
+        0.38
       ],
       "segments": [
         {
           "c1": [
-            -0.25,
-            -0.58
+            0.55,
+            0.1
           ],
           "c2": [
-            0.19,
-            -0.6
+            0.42,
+            -0.42
           ],
           "end": [
-            0.53,
-            -0.26
+            0.1,
+            -0.61
           ]
         },
         {
           "c1": [
-            0.36,
-            -0.15
+            -0.18,
+            -0.62
           ],
           "c2": [
-            0.41,
-            0.25
+            -0.42,
+            -0.55
           ],
           "end": [
-            0.56,
-            0.32
+            -0.48,
+            -0.36
           ]
         }
       ],
       "end": [
-        0.56,
-        0.32
+        -0.48,
+        -0.36
       ],
-      "arc_length_D": 1.894683,
-      "heading_start_deg": -52.651,
-      "heading_end_deg": 25.017,
-      "max_radius_D": 0.644981,
+      "arc_length_D": 1.795913,
+      "heading_start_deg": -75.964,
+      "heading_end_deg": 107.526,
+      "max_radius_D": 0.628531,
       "width_dp_min_max": [
         0.55,
         0.92
@@ -232,7 +232,7 @@
         "head": {
           "u": [
             0.7,
-            1
+            1.0
           ],
           "highlight_multiplier": 1.18
         },
@@ -241,11 +241,11 @@
             0.12,
             0.7
           ],
-          "highlight_multiplier": 1
+          "highlight_multiplier": 1.0
         },
         "tail": {
           "u": [
-            0,
+            0.0,
             0.12
           ],
           "alpha_multiplier": 0.18
@@ -259,50 +259,50 @@
       "type": "gold",
       "depth": "FRONT",
       "start": [
-        -0.55,
-        0.25
+        -0.48,
+        -0.36
       ],
       "segments": [
         {
           "c1": [
-            -0.3,
-            0.05
+            -0.42,
+            -0.1
           ],
           "c2": [
-            -0.07,
-            0.48
+            -0.15,
+            0.36
           ],
           "end": [
-            0.2,
-            0.47
+            0.12,
+            0.58
           ]
         },
         {
           "c1": [
-            0.44,
-            0.51
+            0.32,
+            0.6
           ],
           "c2": [
-            0.53,
-            0.2
+            0.46,
+            0.52
           ],
           "end": [
-            0.59,
-            -0.04
+            0.48,
+            0.38
           ]
         }
       ],
       "end": [
-        0.59,
-        -0.04
+        0.48,
+        0.38
       ],
-      "arc_length_D": 1.539713,
-      "heading_start_deg": -38.66,
-      "heading_end_deg": -75.964,
-      "max_radius_D": 0.604152,
+      "arc_length_D": 1.586653,
+      "heading_start_deg": 77.005,
+      "heading_end_deg": -81.87,
+      "max_radius_D": 0.654804,
       "width_dp_min_max": [
         0.55,
-        1
+        1.0
       ],
       "alpha_min_max": [
         0.45,
@@ -312,7 +312,7 @@
         "head": {
           "u": [
             0.7,
-            1
+            1.0
           ],
           "highlight_multiplier": 1.18
         },
@@ -321,11 +321,11 @@
             0.12,
             0.7
           ],
-          "highlight_multiplier": 1
+          "highlight_multiplier": 1.0
         },
         "tail": {
           "u": [
-            0,
+            0.0,
             0.12
           ],
           "alpha_multiplier": 0.18
@@ -340,46 +340,46 @@
       "depth": "FRONT",
       "start": [
         -0.52,
-        -0.13
+        -0.18
       ],
       "segments": [
         {
           "c1": [
-            -0.31,
-            0.25
+            -0.32,
+            0.15
           ],
           "c2": [
-            -0.19,
-            0.34
+            -0.08,
+            0.38
           ],
           "end": [
-            0.03,
-            0.35
+            0.22,
+            0.45
           ]
         },
         {
           "c1": [
-            0.3,
-            0.48
+            0.42,
+            0.46
           ],
           "c2": [
-            0.48,
+            0.56,
             0.28
           ],
           "end": [
-            0.56,
-            0.02
+            0.55,
+            0.05
           ]
         }
       ],
       "end": [
-        0.56,
-        0.02
+        0.55,
+        0.05
       ],
-      "arc_length_D": 1.49934,
-      "heading_start_deg": 61.074,
-      "heading_end_deg": -72.897,
-      "max_radius_D": 0.560357,
+      "arc_length_D": 1.585554,
+      "heading_start_deg": 58.782,
+      "heading_end_deg": -92.49,
+      "max_radius_D": 0.57601,
       "width_dp_min_max": [
         1.4,
         2.8
@@ -392,7 +392,7 @@
         "head": {
           "u": [
             0.7,
-            1
+            1.0
           ],
           "highlight_multiplier": 1.18
         },
@@ -401,11 +401,11 @@
             0.12,
             0.7
           ],
-          "highlight_multiplier": 1
+          "highlight_multiplier": 1.0
         },
         "tail": {
           "u": [
-            0,
+            0.0,
             0.12
           ],
           "alpha_multiplier": 0.18

@@ -296,9 +296,9 @@
     "green_water_ribbon": {
       "material_id": "green_water_ribbon",
       "material_width_multiplier": 1.75,
-      "base_color": "#5B8F78",
-      "highlight_color": "#A9D9C5",
-      "refraction_color": "#326F67",
+      "base_color": "#14EAA0",
+      "highlight_color": "#D8FF5C",
+      "refraction_color": "#068C7A",
       "blend_mode": "SRC_OVER_PREMULTIPLIED",
       "depth_model": "per_path_BACK_or_FRONT",
       "layer_composition": [
@@ -444,9 +444,9 @@
     "cyan_water_ribbon": {
       "material_id": "cyan_water_ribbon",
       "material_width_multiplier": 1.5,
-      "base_color": "#348CA6",
-      "highlight_color": "#79D7E4",
-      "refraction_color": "#B4F1E8",
+      "base_color": "#00DCFF",
+      "highlight_color": "#EEFBFF",
+      "refraction_color": "#0088E0",
       "blend_mode": "SRC_OVER_PREMULTIPLIED",
       "depth_model": "FRONT",
       "layer_composition": [
@@ -592,9 +592,9 @@
     "warm_gold_filament": {
       "material_id": "warm_gold_filament",
       "material_width_multiplier": 1.0,
-      "base_color": "#D8BC87",
-      "highlight_color": "#FFE6B0",
-      "refraction_color": "#8D754B",
+      "base_color": "#FFBA26",
+      "highlight_color": "#FFFCE6",
+      "refraction_color": "#FF7700",
       "blend_mode": "SRC_OVER_PREMULTIPLIED",
       "depth_model": "per_path_BACK_or_FRONT",
       "layer_composition": [

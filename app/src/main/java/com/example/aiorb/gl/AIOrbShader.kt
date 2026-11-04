@@ -129,57 +129,28 @@ object AIOrbShader {
                 return;
             }
 
-            // === 3D SPHERE PROJECTION & NATURAL SELF-ROTATION ===
+            // === 3D SPHERE PROJECTION & PHYSICAL OPTICS ===
             // Normalized radius on the visible glass sphere core (R_visible = 0.3971)
             vec2 pSph = (uv - vec2(0.5)) / 0.3971;
             float rSph = length(pSph);
             float zSph = (rSph < 1.0) ? sqrt(1.0 - rSph * rSph) : 0.0;
             vec3 N = vec3(pSph.x, pSph.y, zSph);
 
-            // Realistic 3D Tilt Angle: 22.5 degrees (0.39 rad) around Z/X axis
-            const float cosTilt = 0.92388; // cos(22.5 deg)
-            const float sinTilt = 0.38268; // sin(22.5 deg)
+            // Subtle 3D spherical lens refraction at center (stationary glass shell)
+            vec2 pSphLens = pSph * (1.0 - zSph * 0.04);
+            vec2 baseUv = clamp(pSphLens * 0.3971 + vec2(0.5), 0.0, 1.0);
 
-            // 1. Align normal to tilted polar frame
-            vec3 nAligned = vec3(
-                N.x * cosTilt + N.z * sinTilt,
-                N.y,
-                -N.x * sinTilt + N.z * cosTilt
-            );
-
-            // 2. Rotate around polar Y-axis by u_rotationAngle
-            float cosRot = cos(u_rotationAngle);
-            float sinRot = sin(u_rotationAngle);
-            vec3 nRot = vec3(
-                nAligned.x * cosRot - nAligned.z * sinRot,
-                nAligned.y,
-                nAligned.x * sinRot + nAligned.z * cosRot
-            );
-
-            // 3. Re-project into camera view space
-            vec3 nWorld = vec3(
-                nRot.x * cosTilt - nRot.z * sinTilt,
-                nRot.y,
-                nRot.x * sinTilt + nRot.z * cosTilt
-            );
-
-            // Rotated UV for internal water texture & grass sampling
-            // Blends smoothly from 100% 3D rotation at center to stable rim at edge
-            float rotBlendWeight = smoothstep(1.05, 0.30, rSph) * 0.72;
-            vec2 rotatedUv = mix(uv, nRot.xy * 0.3971 + vec2(0.5), rotBlendWeight);
-            vec2 clampedRotUv = clamp(rotatedUv, 0.0, 1.0);
-
-            // 2. Read Grass Mask (R01B derived) with rotational dynamics
-            vec4 grassMask = texture2D(u_grassMaskTexture, clampedRotUv);
+            // 2. Read Grass Mask (R01B derived) with physical orientation
+            vec4 grassMask = texture2D(u_grassMaskTexture, baseUv);
             float backMask = grassMask.r;  // Back leaves
             float frontMask = grassMask.g; // Front leaves
             float combinedMask = max(backMask, frontMask);
 
-            // 3. Scheme B: Local source-sampled optical UV displacement
+            // 3. Scheme B: Local source-sampled optical UV displacement (aquatic grass sway)
             vec2 displacement = (u_grassDisplacementBack * backMask + u_grassDisplacementFront * frontMask) * u_grassMotionWeight;
-            vec2 displacedUv = clamp(clampedRotUv - displacement, 0.0, 1.0);
+            vec2 displacedUv = clamp(baseUv - displacement, 0.0, 1.0);
 
-            vec4 originalCore = texture2D(u_coreTexture, clampedRotUv);
+            vec4 originalCore = texture2D(u_coreTexture, baseUv);
             vec4 displacedCore = texture2D(u_coreTexture, displacedUv);
 
             // Optical deformation mix: only displaces within the mask region, without duplicating leaves
@@ -190,16 +161,19 @@ object AIOrbShader {
                 return;
             }
 
-            // 4. L04 Internal Caustics - 3D Revolvig Caustics flowing with sphere self-rotation
+            // 4. L04 Internal Caustics - 3D Revolving Caustics flowing dynamically with liquid rotation
             float waterRadius = 0.385;
             float waterEdge = 0.035;
             float waterMask = smoothstep(waterRadius, waterRadius - waterEdge, distFromCenter);
 
-            // 3D Rotational Caustics tied directly to nRot
-            vec3 causticCoord1 = nRot * 4.8 + vec3(u_causticsDeepTime * 0.035, u_causticsDeepTime * 0.02, u_causticsDeepTime * 0.015);
-            vec3 causticCoord2 = nRot * 9.2 + vec3(-u_causticsSurfaceTime * 0.06, u_causticsSurfaceTime * 0.04, -u_causticsSurfaceTime * 0.03);
-            float causticDeep = snoise(causticCoord1.xy + causticCoord1.z);
-            float causticSurf = snoise(causticCoord2.xy + causticCoord2.z);
+            float cosRot = cos(u_rotationAngle);
+            float sinRot = sin(u_rotationAngle);
+            vec2 pRot = vec2(pSph.x * cosRot - pSph.y * sinRot, pSph.x * sinRot + pSph.y * cosRot);
+
+            vec2 causticCoord1 = pRot * 4.6 + vec2(cos(u_rotationAngle * 0.75), sin(u_rotationAngle * 0.75)) * 0.4 + vec2(u_causticsDeepTime * 0.035, u_causticsDeepTime * 0.02);
+            vec2 causticCoord2 = pRot * 8.6 + vec2(-sin(u_rotationAngle * 1.15), cos(u_rotationAngle * 1.15)) * 0.6 + vec2(-u_causticsSurfaceTime * 0.06, u_causticsSurfaceTime * 0.04);
+            float causticDeep = snoise(causticCoord1);
+            float causticSurf = snoise(causticCoord2);
             float causticPattern = clamp((causticDeep * 0.45 + causticSurf * 0.55) * 0.5 + 0.5, 0.0, 1.0);
             vec3 causticColor = vec3(0.42, 0.96, 0.86) * causticPattern;
             float causticsAlpha = u_causticsAlpha * waterMask * 1.35;
@@ -208,12 +182,17 @@ object AIOrbShader {
             vec3 grassResponseCol = vec3(0.663, 0.851, 0.773) * u_grassLightResponse * combinedMask;
 
             // 6. L07 Sunlight Highlight & Refraction (Fixed in world space at upper-left UV 0.24, 0.20)
-            // The sunlight specular reflection remains physically grounded while the interior liquid rotates
+            // The sunlight specular reflection remains physically grounded on outer glass while liquid rotates inside
             vec2 sunVec = uv - u_sunlightSourceUV;
             float sunDist = length(sunVec);
-            float sunGlint = exp(-sunDist * sunDist * 18.0) * u_glassSpecularAlpha * 1.5;
-            float coreRefraction = exp(-sunDist * sunDist * 6.0) * u_coreRefractionAlpha * 1.3;
-            vec3 sunHighlight = u_sunlightColor * (sunGlint + coreRefraction);
+            float sunGlint = exp(-sunDist * sunDist * 22.0) * u_glassSpecularAlpha * 1.8;
+            float coreRefraction = exp(-sunDist * sunDist * 6.5) * u_coreRefractionAlpha * 1.4;
+
+            // Anamorphic horizontal flare streak through 11 o'clock sun (rotated -25 deg)
+            vec2 flareVec = vec2(sunVec.x * 0.906 + sunVec.y * 0.422, -sunVec.x * 0.422 + sunVec.y * 0.906);
+            float anamorphicStreak = exp(-flareVec.x * flareVec.x * 2.2 - flareVec.y * flareVec.y * 135.0) * u_glassSpecularAlpha * 0.85;
+
+            vec3 sunHighlight = u_sunlightColor * (sunGlint + coreRefraction + anamorphicStreak);
 
             // Crystalline Glass Fresnel Rim: edge shimmering refraction
             float fresnelRim = pow(clamp(1.0 - zSph, 0.0, 1.0), 3.2) * 0.55 * waterMask;
@@ -235,9 +214,9 @@ object AIOrbShader {
             finalRgb += sunHighlight;
 
             // 8. L02 Internal Droplets (D1, D2, D3)
-            vec4 d1 = renderDroplet(clampedRotUv, u_droplet1Uv, 0.018, u_droplet1Alpha * waterMask);
-            vec4 d2 = renderDroplet(clampedRotUv, u_droplet2Uv, 0.022, u_droplet2Alpha * waterMask);
-            vec4 d3 = renderDroplet(clampedRotUv, u_droplet3Uv, 0.014, u_droplet3Alpha * waterMask);
+            vec4 d1 = renderDroplet(baseUv, u_droplet1Uv, 0.018, u_droplet1Alpha * waterMask);
+            vec4 d2 = renderDroplet(baseUv, u_droplet2Uv, 0.022, u_droplet2Alpha * waterMask);
+            vec4 d3 = renderDroplet(baseUv, u_droplet3Uv, 0.014, u_droplet3Alpha * waterMask);
             vec4 droplets = d1 + d2 + d3;
             finalRgb = mix(finalRgb, droplets.rgb, droplets.a);
 

@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import com.example.aiorb.gl.AIOrbRenderer
 import com.example.aiorb.gl.OrbCoordinateMapper
 import com.example.aiorb.model.*
+import com.example.aiorb.ribbon.DualRimRibbonConfig
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -25,6 +26,10 @@ data class AIOrbUiState(
     val isPlaying: Boolean = true,
     val orbSizeScale: Float = 0.5f, // Default 0.5f (half of previous 80dp = 40dp)
     val is80dp: Boolean = false, // Backwards compatibility
+
+    // Dual-Rim Specular Ribbons (水草与流体 3D 实体带状双侧高光)
+    val useDualRimRibbons: Boolean = true,
+    val ribbonConfig: DualRimRibbonConfig = DualRimRibbonConfig(),
 
     // Current metrics
     val sceneElapsedMs: Long = 0L,
@@ -76,8 +81,46 @@ class AIOrbViewModel(application: Application) : AndroidViewModel(application) {
 
     init {
         renderer.orbSizeScale = 0.5f
+        renderer.enableGlFilaments = false // Use Compose Dual-Rim Ribbons by default for high fidelity
         // Start directly in RELEASE PREVIEW loop mode by default
         clock.startReleasePreview(loop = true)
+    }
+
+    fun toggleRibbonPipeline(useDualRim: Boolean) {
+        renderer.enableGlFilaments = !useDualRim
+        _uiState.value = _uiState.value.copy(useDualRimRibbons = useDualRim)
+    }
+
+    fun updateRibbonConfig(newConfig: DualRimRibbonConfig) {
+        _uiState.value = _uiState.value.copy(ribbonConfig = newConfig)
+    }
+
+    fun updateSeagrassWidth(v: Float) {
+        updateRibbonConfig(_uiState.value.ribbonConfig.copy(seagrassRibbonWidth = v))
+    }
+
+    fun updateSeagrassWave(v: Float) {
+        updateRibbonConfig(_uiState.value.ribbonConfig.copy(seagrassWaveAmount = v))
+    }
+
+    fun updateFilamentTwist(v: Float) {
+        updateRibbonConfig(_uiState.value.ribbonConfig.copy(filamentTwist = v))
+    }
+
+    fun updateFilamentRadiusRatio(v: Float) {
+        updateRibbonConfig(_uiState.value.ribbonConfig.copy(filamentRadiusRatio = v))
+    }
+
+    fun updateFilamentThickness(v: Float) {
+        updateRibbonConfig(_uiState.value.ribbonConfig.copy(filamentThickness = v))
+    }
+
+    fun updateFilamentOrbitSpeed(v: Float) {
+        updateRibbonConfig(_uiState.value.ribbonConfig.copy(filamentOrbitSpeed = v))
+    }
+
+    fun updateFilamentCount(count: Int) {
+        updateRibbonConfig(_uiState.value.ribbonConfig.copy(filamentCount = count))
     }
 
     private val _uiState = MutableStateFlow(AIOrbUiState())

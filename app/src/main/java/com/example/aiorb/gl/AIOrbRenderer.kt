@@ -13,6 +13,7 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
 import kotlin.math.PI
+import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.math.sqrt
 
@@ -58,6 +59,8 @@ class AIOrbRenderer(private val context: Context) {
     // R06 Diagnostics & Inspection
     var diagnosticMode: R06DiagnosticMode = R06DiagnosticMode.RUNTIME
     val enabledPathIds: MutableSet<String> = mutableSetOf("G01", "G02", "A01", "A02", "C01")
+    // Filament rendering pipeline control (true = GL shader filaments, false = bypassed for Compose Dual-Rim Ribbons)
+    var enableGlFilaments: Boolean = true
     var isLowPowerMode: Boolean = false
 
     // Diagnostic Shader compilation & link status indicators
@@ -123,12 +126,15 @@ class AIOrbRenderer(private val context: Context) {
     private var uDroplet3UvLoc = -1
     private var uDroplet3AlphaLoc = -1
 
+    var orbitInclinationRad: Float = -0.5235988f // Master artwork inclination angle (-30 deg)
+
     // Filament Uniform & Attrib locations
     private var fPositionLoc = -1
     private var fUvLoc = -1
     private var fResolutionLoc = -1
     private var fScaleLoc = -1
     private var fCoreVisibleRadiusLoc = -1
+    private var fOrbitInclinationLoc = -1
     private var fBaseColorLoc = -1
     private var fHighlightColorLoc = -1
     private var fRefractionColorLoc = -1
@@ -282,7 +288,7 @@ class AIOrbRenderer(private val context: Context) {
         frame: OrbSceneFrame,
         currentScale: Float
     ) {
-        if (filamentProgramId == 0 || holders.isEmpty()) return
+        if (!enableGlFilaments || filamentProgramId == 0 || holders.isEmpty()) return
 
         // In normal RUNTIME mode, hide filaments during S1 idle when progress is near zero
         if (diagnosticMode == R06DiagnosticMode.RUNTIME &&
@@ -298,6 +304,7 @@ class AIOrbRenderer(private val context: Context) {
         GLES20.glUniform2f(fResolutionLoc, viewWidth.toFloat(), viewHeight.toFloat())
         GLES20.glUniform1f(fScaleLoc, currentScale)
         GLES20.glUniform1f(fCoreVisibleRadiusLoc, OrbCoordinateMapper.CORE_VISIBLE_RADIUS_UV)
+        GLES20.glUniform1f(fOrbitInclinationLoc, orbitInclinationRad)
         GLES20.glUniform1i(fDiagnosticModeLoc, diagnosticMode.modeId)
         GLES20.glUniform1f(fGlowIntensityLoc, glowIntensityMultiplier)
 
@@ -325,7 +332,32 @@ class AIOrbRenderer(private val context: Context) {
                 isHold = frame.isHold
             )
 
-            if (kin.headU <= kin.tailU) continue
+            // Determine active arc window [sStart, sEnd]
+            val sStart: Float
+            val sEnd: Float
+
+            if (diagnosticMode != R06DiagnosticMode.RUNTIME) {
+                sStart = 0.0f
+                sEnd = 1.0f
+            } else {
+                when (frame.currentPhaseEvent) {
+                    OrbPhaseEvent.RELEASE -> {
+                        sStart = 0.0f
+                        sEnd = kin.headU.coerceIn(0.25f, 1.0f)
+                    }
+                    OrbPhaseEvent.RETURN -> {
+                        sStart = (1.0f - kin.headU).coerceIn(0.0f, 0.75f)
+                        sEnd = 1.0f
+                    }
+                    else -> {
+                        // Continuous flowing ribbon in S2 active mode
+                        sStart = 0.0f
+                        sEnd = 1.0f
+                    }
+                }
+            }
+
+            if (sStart >= sEnd) continue
 
             // Build ribbon mesh into preallocated buffer without heap allocation
             val subdivisions = if (isLowPowerMode) 48 else holder.maxSubdivisions
@@ -343,17 +375,26 @@ class AIOrbRenderer(private val context: Context) {
                 breathFactor = breathFactor
             )
 
+            val timeSec = frame.sceneElapsedMs / 1000.0
             for (step in 0..subdivisions) {
                 val frac = step.toFloat() / subdivisions
-                val s = kin.tailU + (kin.headU - kin.tailU) * frac
+                val s = sStart + (sEnd - sStart) * frac
                 val pt = path.getPointAtArcFraction(s)
 
                 val nextPt = path.getPointAtArcFraction((s + 0.015f).coerceAtMost(1f))
                 val tdx = nextPt.x - pt.x
                 val tdy = nextPt.y - pt.y
                 val tlen = sqrt(tdx * tdx + tdy * tdy).coerceAtLeast(0.0001f)
-                val nx = -tdy / tlen * strokeWidthD * 0.5f
-                val ny = tdx / tlen * strokeWidthD * 0.5f
+
+                // Aquatic wave ripple along transverse normal (like swaying seagrass in water)
+                val wavePhase = 2.0 * PI * frac * 1.5 + timeSec * 2.2 + path.phase * 2.0 * PI
+                val waveDisp = sin(wavePhase).toFloat() * (strokeWidthD * 0.22f) * grassMotionMultiplier
+
+                // Natural organic taper: broad and generous in midriff, gracefully tapered at tips
+                val taper = sin(frac * PI).toFloat().pow(0.55f).coerceIn(0.12f, 1.0f)
+                val currentWidth = strokeWidthD * taper
+                val nx = (-tdy / tlen) * (currentWidth * 0.5f + waveDisp)
+                val ny = (tdx / tlen) * (currentWidth * 0.5f + waveDisp)
 
                 // Vertex 1 (positive transverse normal)
                 holder.posBuffer.put(pt.x + nx)
@@ -480,6 +521,7 @@ class AIOrbRenderer(private val context: Context) {
             fResolutionLoc = GLES20.glGetUniformLocation(filamentProgramId, "u_resolution")
             fScaleLoc = GLES20.glGetUniformLocation(filamentProgramId, "u_scale")
             fCoreVisibleRadiusLoc = GLES20.glGetUniformLocation(filamentProgramId, "u_coreVisibleRadiusUv")
+            fOrbitInclinationLoc = GLES20.glGetUniformLocation(filamentProgramId, "u_orbitInclination")
             fBaseColorLoc = GLES20.glGetUniformLocation(filamentProgramId, "u_baseColor")
             fHighlightColorLoc = GLES20.glGetUniformLocation(filamentProgramId, "u_highlightColor")
             fRefractionColorLoc = GLES20.glGetUniformLocation(filamentProgramId, "u_refractionColor")

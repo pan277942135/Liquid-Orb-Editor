@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1400" viewBox="-700 -700 1400 1400">
 <title>R06 five editable OrbLocal centerlines</title>
 <desc>Centerlines only. Dynamic width, color, alpha, highlight and material layers are defined in R06_orb_filament_profile.json.</desc>
-<path id="G01" data-depth="BACK" data-material="green_water_ribbon" fill="none" d="M -550.000 290.000 C -610.000 -170.000 -430.000 -550.000 -160.000 -510.000 C 150.000 -620.000 510.000 -200.000 440.000 220.000"/>
-<path id="G02" data-depth="FRONT" data-material="green_water_ribbon" fill="none" d="M -580.000 170.000 C -390.000 420.000 -70.000 420.000 140.000 220.000 C 370.000 40.000 580.000 220.000 450.000 450.000"/>
-<path id="A01" data-depth="BACK" data-material="warm_gold_filament" fill="none" d="M -540.000 -200.000 C -250.000 -580.000 190.000 -600.000 530.000 -260.000 C 360.000 -150.000 410.000 250.000 560.000 320.000"/>
-<path id="A02" data-depth="FRONT" data-material="warm_gold_filament" fill="none" d="M -550.000 250.000 C -300.000 50.000 -70.000 480.000 200.000 470.000 C 440.000 510.000 530.000 200.000 590.000 -40.000"/>
-<path id="C01" data-depth="FRONT" data-material="cyan_water_ribbon" fill="none" d="M -520.000 -130.000 C -310.000 250.000 -190.000 340.000 30.000 350.000 C 300.000 480.000 480.000 280.000 560.000 20.000"/>
+<path id="G01" data-depth="BACK" data-material="green_water_ribbon" fill="none" d="M -420.000 460.000 C -520.000 360.000 -590.000 100.000 -560.000 -200.000 C -520.000 -400.000 -460.000 -520.000 -380.000 -520.000"/>
+<path id="G02" data-depth="FRONT" data-material="green_water_ribbon" fill="none" d="M -380.000 -520.000 C -100.000 -380.000 320.000 -100.000 500.000 180.000 C 600.000 400.000 200.000 620.000 -420.000 460.000"/>
+<path id="A01" data-depth="BACK" data-material="warm_gold_filament" fill="none" d="M 480.000 380.000 C 550.000 100.000 420.000 -420.000 100.000 -610.000 C -180.000 -620.000 -420.000 -550.000 -480.000 -360.000"/>
+<path id="A02" data-depth="FRONT" data-material="warm_gold_filament" fill="none" d="M -480.000 -360.000 C -420.000 -100.000 -150.000 360.000 120.000 580.000 C 320.000 600.000 460.000 520.000 480.000 380.000"/>
+<path id="C01" data-depth="FRONT" data-material="cyan_water_ribbon" fill="none" d="M -520.000 -180.000 C -320.000 150.000 -80.000 380.000 220.000 450.000 C 420.000 460.000 560.000 280.000 550.000 50.000"/>
 </svg>

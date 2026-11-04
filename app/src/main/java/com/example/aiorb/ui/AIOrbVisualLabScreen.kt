@@ -59,6 +59,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import com.example.aiorb.ribbon.DualRimRibbonCanvas
+import com.example.aiorb.ui.components.DualRimRibbonControlSection
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -87,10 +91,13 @@ fun AIOrbVisualLabScreen(
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
 
+    val currentFrameState = remember { mutableStateOf(viewModel.renderer.sceneClock.produceFrame()) }
+
     // Realtime frame update loop to synchronize UI State
     LaunchedEffect(Unit) {
         while (isActive) {
             val frame = viewModel.renderer.sceneClock.produceFrame()
+            currentFrameState.value = frame
             viewModel.updateFromFrame(frame)
             delay(16)
         }
@@ -102,7 +109,19 @@ fun AIOrbVisualLabScreen(
             .background(Color(0xFF070913))
     ) {
 
-        // 1. Core Visualizer Host (TextureView)
+        // 1. Back Pass 3D Dual-Rim Specular Ribbons (behind the glass sphere)
+        if (uiState.useDualRimRibbons) {
+            DualRimRibbonCanvas(
+                isBackPass = true,
+                frame = currentFrameState.value,
+                config = uiState.ribbonConfig,
+                orbSizeScale = uiState.orbSizeScale,
+                touchRotationOffset = viewModel.renderer.touchRotationOffset,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+
+        // 2. Core Visualizer Host (TextureView - draws transparent 3D glass core sphere)
         AndroidView(
             factory = { ctx ->
                 AIOrbTextureView(ctx, viewModel.renderer)
@@ -111,6 +130,18 @@ fun AIOrbVisualLabScreen(
                 .fillMaxSize()
                 .testTag("ai_orb_texture_view")
         )
+
+        // 3. Front Pass 3D Dual-Rim Specular Ribbons (in front of glass sphere + Light Knot Starburst)
+        if (uiState.useDualRimRibbons) {
+            DualRimRibbonCanvas(
+                isBackPass = false,
+                frame = currentFrameState.value,
+                config = uiState.ribbonConfig,
+                orbSizeScale = uiState.orbSizeScale,
+                touchRotationOffset = viewModel.renderer.touchRotationOffset,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
 
         // 2. Overlay Layer
         Column(
@@ -134,7 +165,10 @@ fun AIOrbVisualLabScreen(
             )
 
             // Real-time HUD info
-            MetricsHudBar(uiState = uiState)
+            MetricsHudBar(
+                uiState = uiState,
+                onToggleRibbonPipeline = { viewModel.toggleRibbonPipeline(!uiState.useDualRimRibbons) }
+            )
 
             Spacer(modifier = Modifier.weight(1f))
 
@@ -363,7 +397,10 @@ private fun TopLabHeader(
 }
 
 @Composable
-private fun MetricsHudBar(uiState: AIOrbUiState) {
+private fun MetricsHudBar(
+    uiState: AIOrbUiState,
+    onToggleRibbonPipeline: (() -> Unit)? = null
+) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -503,11 +540,12 @@ private fun MetricsHudBar(uiState: AIOrbUiState) {
                 )
 
                 Text(
-                    text = if (uiState.coreShaderCompiled && uiState.filamentShaderCompiled) "GL: OK" else "GL: ERR",
+                    text = if (uiState.useDualRimRibbons) "3D DUAL-RIM" else (if (uiState.coreShaderCompiled && uiState.filamentShaderCompiled) "GL: OK" else "GL: ERR"),
                     fontSize = 9.sp,
                     fontWeight = FontWeight.Bold,
                     fontFamily = FontFamily.Monospace,
-                    color = if (uiState.coreShaderCompiled && uiState.filamentShaderCompiled) Color(0xFF4ADE80) else Color(0xFFEF4444)
+                    color = if (uiState.useDualRimRibbons) Color(0xFF34D399) else (if (uiState.coreShaderCompiled && uiState.filamentShaderCompiled) Color(0xFF4ADE80) else Color(0xFFEF4444)),
+                    modifier = Modifier.clickable { onToggleRibbonPipeline?.invoke() }
                 )
             }
         }
@@ -667,7 +705,15 @@ private fun BottomControlPanel(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // 3. R06 Diagnostic Controls (光丝诊断、几何模式与材质分离)
+                    // 3. Dual-Rim Specular Ribbons (3D 实体带状双侧高光水草生态)
+                    DualRimRibbonControlSection(
+                        uiState = uiState,
+                        viewModel = viewModel
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // 4. R06 Diagnostic Controls (光丝诊断、几何模式与材质分离)
                     R06DiagnosticSection(
                         uiState = uiState,
                         viewModel = viewModel
